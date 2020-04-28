@@ -35,6 +35,16 @@ py_library(
 )
 
 py_library(
+    name = "base_interpreter",
+    srcs = ["detectors/base_interpreter.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//third_party/py/numpy",
+        "//third_party/py/six",
+    ],
+)
+
+py_library(
     name = "isolation_forest_detector",
     srcs = ["detectors/isolation_forest_detector.py"],
     srcs_version = "PY3",
@@ -56,6 +66,37 @@ py_strict_test(
         ":gaussian_mixture_dataset",
         ":isolation_forest_detector",
         "//third_party/py/absl/testing:absltest",
+    ],
+)
+
+py_library(
+    name = "neg_sample_neural_net_detector",
+    srcs = ["detectors/neg_sample_neural_net_detector.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":base_detector",
+        ":base_interpreter",
+        ":sample_utils",
+        "//third_party/py/absl/logging",
+        "//third_party/py/keras",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
+    ],
+)
+
+py_strict_test(
+    name = "neg_sample_neural_net_detector_test",
+    srcs = ["detectors/neg_sample_neural_net_detector_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":evaluation_utils",
+        ":gaussian_mixture_dataset",
+        ":neg_sample_neural_net_detector",
+        "//third_party/py/absl/logging",
+        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/numpy",
     ],
 )
 

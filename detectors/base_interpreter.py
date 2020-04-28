@@ -12,24 +12,19 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Base class for Anomaly Detector instances."""
+"""Base class for Interpreting Anomalies."""
 
 import abc
 
-import pandas as pd
+import numpy as np
 import six
 
 
 @six.add_metaclass(abc.ABCMeta)
-class BaseAnomalyDetectionAlgorithm(object):
-  """All AD algorithms will include a train and predict step."""
+class BaseAnomalyInterpreter(object):
+  """Defines methods for interpreting anomalies."""
 
   @abc.abstractmethod
-  def train_model(self, x_train: pd.DataFrame) -> None:
-    """Trains the model on a training set."""
-    pass
-
-  @abc.abstractmethod
-  def predict(self, sample_df: pd.DataFrame) -> pd.DataFrame:
-    """Predicts with the model on a test set."""
+  def blame(self, anomaly: np.array) -> np.array:
+    """Accepts a an array of values and returns a proportional blame."""
     pass

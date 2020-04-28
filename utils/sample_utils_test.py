@@ -19,6 +19,7 @@ import madi.utils.sample_utils as sample_utils
 import numpy as np
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_series_equal
 
 
 class SampleUtilsTest(absltest.TestCase):
@@ -86,6 +87,23 @@ class SampleUtilsTest(absltest.TestCase):
     df_pos = sample_utils.get_pos_sample(df_raw, 3)
     self.assertLen(df_pos, 3)
     self.assertEqual(df_pos['class_label'].all(), 1)
+
+  def test_apply_negative_sample(self):
+
+    positive_sample = pd.DataFrame({
+        'x001': [-1.0, 0.0, -0.4, -0.5, -1.0],
+        'x002': [67.0, 50.0, 98.0, 100.0, 77.0],
+        'x003': [0.0001, 0.00011, 0.0008, 0.0009, 0.0005]
+    })
+    sample = sample_utils.apply_negative_sample(positive_sample, 10, 0.05)
+    assert_series_equal(sample['class_label'].value_counts(),
+                        pd.Series([50, 5], name='class_label', index=[0, 1]))
+    self.assertGreaterEqual(min(sample['x001']), -1.05)
+    self.assertLessEqual(max(sample['x001']), 0.05)
+    self.assertGreaterEqual(min(sample['x002']), 47.5)
+    self.assertLessEqual(max(sample['x002']), 102.5)
+    self.assertGreaterEqual(min(sample['x003']), 6e-05)
+    self.assertLessEqual(max(sample['x003']), 0.00094)
 
 
 if __name__ == '__main__':

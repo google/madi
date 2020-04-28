@@ -22,7 +22,7 @@ from sklearn.ensemble import IsolationForest
 class IsolationForestAd(IsolationForest, BaseAnomalyDetectionAlgorithm):
   """Wrapper class around the scikit-learn Isolation Forest Implementation."""
 
-  def train_model(self, x_train: pd.DataFrame, y_train: pd.DataFrame):
+  def train_model(self, x_train: pd.DataFrame):
     super(IsolationForestAd, self).fit(X=x_train)
 
   def predict(self, x_test: pd.DataFrame) -> pd.DataFrame:

@@ -145,6 +145,29 @@ def get_neg_sample(pos_sample: pd.DataFrame,
   return df_neg
 
 
+def apply_negative_sample(positive_sample: pd.DataFrame, sample_ratio: float,
+                          sample_delta: float) -> pd.DataFrame:
+  """Returns a dataset with negative and positive sample.
+
+  Args:
+    positive_sample: actual, observed sample where each col is a feature.
+    sample_ratio: the desired ratio of negative to positive points
+    sample_delta: the extension beyond observed limits to bound the neg sample
+
+  Returns:
+    DataFrame with features + class label, with 1 being observed and 0 negative.
+  """
+
+  positive_sample["class_label"] = 1
+  n_neg_points = int(len(positive_sample) * sample_ratio)
+  negative_sample = get_neg_sample(
+      positive_sample, n_neg_points, do_permute=False, delta=sample_delta)
+  training_sample = pd.concat([positive_sample, negative_sample],
+                              ignore_index=True,
+                              sort=True)
+  return training_sample.reindex(np.random.permutation(training_sample.index))
+
+
 def get_pos_sample(df_input: pd.DataFrame, n_points: int) -> pd.DataFrame:
   """Draws n_points from the data sample, and adds a class_label column."""
   df_pos = df_input.sample(n=n_points)

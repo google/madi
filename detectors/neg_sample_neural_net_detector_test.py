@@ -12,18 +12,18 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.isolation_forest_detector."""
+"""Tests for google3.third_party.py.madi.detectors.neg_sample_neural_net_detector."""
 
 from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
-from madi.detectors.isolation_forest_detector import IsolationForestAd
+from madi.detectors.neg_sample_neural_net_detector import NegativeSamplingNeuralNetworkAD
 import madi.utils.evaluation_utils as evaluation_utils
 
 
-class IsolationForestDetectorTest(absltest.TestCase):
+class NegSampleNeuralNetDetectorTest(absltest.TestCase):
 
-  def test_isolation_forest(self):
-    """Creates a 1-mode, 4-d test sample, and performs anomaly detection."""
+  def test_gaussian_mixture(self):
+    """Tests NS-NN on single-mode Gaussian."""
 
     sample_ratio = 0.05
     ds = gaussian_mixture_dataset.GaussianMixtureDataset(
@@ -34,11 +34,22 @@ class IsolationForestDetectorTest(absltest.TestCase):
         upper_bound=3,
         lower_bound=-3)
 
+    log_dir = self.create_tempdir()
     split_ix = int(len(ds.sample) * 0.8)
     training_sample = ds.sample.iloc[:split_ix]
     test_sample = ds.sample.iloc[split_ix:]
 
-    ad = IsolationForestAd(behaviour='new', contamination=sample_ratio)
+    ad = NegativeSamplingNeuralNetworkAD(
+        sample_ratio=3.0,
+        sample_delta=0.05,
+        batch_size=32,
+        steps_per_epoch=16,
+        epochs=20,
+        dropout=0.5,
+        layer_width=64,
+        n_hidden_layers=2,
+        log_dir=log_dir)
+
     ad.train_model(x_train=training_sample.drop(columns=['class_label']))
 
     y_actual = test_sample['class_label']
@@ -47,7 +58,7 @@ class IsolationForestDetectorTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.85)
+    self.assertGreater(auc, 0.99)
 
 
 if __name__ == '__main__':
