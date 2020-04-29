@@ -134,6 +134,37 @@ py_strict_test(
     ],
 )
 
+py_library(
+    name = "smart_buildings_dataset",
+    srcs = ["datasets/smart_buildings_dataset.py"],
+    data = [
+        "datasets/data/anomaly_detection_sample_1577622599.csv",
+        "datasets/data/anomaly_detection_sample_1577622599_README.md",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        ":base_dataset",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
+    ],
+)
+
+py_strict_test(
+    name = "smart_buildings_dataset_test",
+    srcs = ["datasets/smart_buildings_dataset_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":smart_buildings_dataset",
+        "//third_party/py/absl/logging",
+        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+    ],
+)
+
 ####### UTILS #######
 py_library(
     name = "sample_utils",
