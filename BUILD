@@ -108,6 +108,7 @@ py_library(
     deps = [
         "//third_party/py/pandas",
         "//third_party/py/six",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -162,6 +163,41 @@ py_strict_test(
         "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
+    ],
+)
+
+py_library(
+    name = "forestcover_dataset",
+    srcs = ["datasets/forestcover_dataset.py"],
+    data = [
+        "datasets/data/forestcover_README.md",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        ":base_dataset",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
+        "//third_party/py/tensorflow_datasets:public_api",
+    ],
+)
+
+py_strict_test(
+    name = "forestcover_dataset_test",
+    srcs = ["datasets/forestcover_dataset_test.py"],
+    data = [
+        "datasets/data/covtype.test.data",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":forestcover_dataset",
+        "//third_party/py/absl/logging",
+        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 

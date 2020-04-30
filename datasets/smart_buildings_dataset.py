@@ -52,11 +52,3 @@ class SmartBuildingsDataset(BaseDataset):
       sample = pd.read_csv(csv_file)
     return sample
 
-  def _load_readme(self, readmefile: str) -> str:
-    desc = ""
-    if not tf.io.gfile.exists(readmefile):
-      raise AssertionError("{} does not exist".format(readmefile))
-    with tf.io.gfile.GFile(readmefile) as text_file:
-      lines = text_file.readlines()
-      desc = " ".join(lines)
-    return desc

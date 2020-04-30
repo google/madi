@@ -18,6 +18,7 @@ import abc
 
 import pandas as pd
 import six
+import tensorflow as tf
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -41,3 +42,12 @@ class BaseDataset(object):
   def description(self) -> str:
     """Informative text summary of the dataset."""
     pass
+
+  def _load_readme(self, readmefile: str) -> str:
+    desc = ""
+    if not tf.io.gfile.exists(readmefile):
+      raise AssertionError("{} does not exist".format(readmefile))
+    with tf.io.gfile.GFile(readmefile) as text_file:
+      lines = text_file.readlines()
+      desc = " ".join(lines)
+    return desc
