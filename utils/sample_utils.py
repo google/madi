@@ -14,7 +14,7 @@
 #     limitations under the License.
 """Utilities to to generate or modify data samples."""
 
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ class Variable(object):
     self.std = std
 
 
-def get_normalization_info(df: pd.DataFrame) -> List[Variable]:
+def get_normalization_info(df: pd.DataFrame) -> Dict[str, Variable]:
   """Computes means, standard deviation to normalize a data frame.
 
   Args:
@@ -52,7 +52,7 @@ def get_normalization_info(df: pd.DataFrame) -> List[Variable]:
   return variables
 
 
-def get_column_order(normalization_info: List[Variable]) -> List[str]:
+def get_column_order(normalization_info: Dict[str, Variable]) -> List[str]:
   """Returns a list of column names, as strings, in model order."""
   return [
       var.name
@@ -61,7 +61,7 @@ def get_column_order(normalization_info: List[Variable]) -> List[str]:
 
 
 def normalize(df: pd.DataFrame,
-              normalization_info: List[Variable]) -> pd.DataFrame:
+              normalization_info: Dict[str, Variable]) -> pd.DataFrame:
   """Normalizes an input Dataframe of features.
 
   Args:
@@ -79,7 +79,7 @@ def normalize(df: pd.DataFrame,
 
 
 def denormalize(df_norm: pd.DataFrame,
-                normalization_info: List[Variable]) -> pd.DataFrame:
+                normalization_info: Dict[str, Variable]) -> pd.DataFrame:
   """Reverts normalization an input Dataframe of features.
 
   Args:
@@ -178,7 +178,7 @@ def get_pos_sample(df_input: pd.DataFrame, n_points: int) -> pd.DataFrame:
 def get_train_data(input_df: pd.DataFrame,
                    n_points: int,
                    sample_ratio: float = 1.0,
-                   do_permute: bool = True) -> (pd.DataFrame, pd.Series):
+                   do_permute: bool = True):
   """Generates a test and train data set for buidlings a test model.
 
   Args:

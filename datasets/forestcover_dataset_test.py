@@ -44,7 +44,6 @@ class ForestCoverDatasetTest(absltest.TestCase):
     ds = forestcover_dataset.ForestCoverDataset(datadir)
     self.assertCountEqual(ds.sample.columns, _COL_NAMES_SELECT)
     self.assertLen(ds.sample, 139)
-    logging.info(ds.sample)
 
 
 if __name__ == '__main__':

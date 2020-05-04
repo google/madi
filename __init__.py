@@ -12,17 +12,12 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Base class for Interpreting Anomalies."""
+"""Imports for colab accessibility."""
+import madi.datasets.forestcover_dataset
+import madi.datasets.gaussian_mixture_dataset
+import madi.datasets.smart_buildings_dataset
+import madi.detectors.isolation_forest_detector
+import madi.detectors.neg_sample_neural_net_detector
+import madi.utils.evaluation_utils
+import madi.utils.sample_utils
 
-import abc
-import six
-
-
-@six.add_metaclass(abc.ABCMeta)
-class BaseAnomalyInterpreter(object):
-  """Defines methods for interpreting anomalies."""
-
-  @abc.abstractmethod
-  def blame(self, anomaly):
-    """Accepts a an array of values and returns a proportional blame."""
-    pass

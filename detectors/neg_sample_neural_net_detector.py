@@ -21,7 +21,6 @@ import madi.utils.sample_utils as sample_utils
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow import keras
 
 _SHUFFLE_BUFFERSIZE = 500
 
@@ -101,7 +100,7 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
         verbose=0,
         epochs=self._epochs,
         callbacks=[
-            keras.callbacks.TensorBoard(
+            tf.keras.callbacks.TensorBoard(
                 log_dir=self._log_dir,
                 histogram_freq=1,
                 write_graph=False,
@@ -124,16 +123,17 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
     return sample_df
 
   def _get_model(self, input_dim, dropout, layer_width, n_hidden_layers):
-    model = keras.Sequential()
+    model = tf.keras.Sequential()
     model.add(
-        keras.layers.Dense(layer_width, input_dim=input_dim, activation='relu'))
-    model.add(keras.layers.Dropout(dropout))
+        tf.keras.layers.Dense(
+            layer_width, input_dim=input_dim, activation='relu'))
+    model.add(tf.keras.layers.Dropout(dropout))
 
     for _ in range(n_hidden_layers):
-      model.add(keras.layers.Dense(layer_width, activation='relu'))
-      model.add(keras.layers.Dropout(dropout))
+      model.add(tf.keras.layers.Dense(layer_width, activation='relu'))
+      model.add(tf.keras.layers.Dropout(dropout))
 
-    model.add(keras.layers.Dense(1, activation='sigmoid'))
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
 
     model.compile(
         loss='binary_crossentropy',
@@ -141,6 +141,6 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
         metrics=[tf.keras.metrics.binary_accuracy])
     return model
 
-  def blame(self, anomaly: np.array) -> np.array:
+  def blame(self, anomaly):
     """Provides interpreration using integrated gradients."""
     return None

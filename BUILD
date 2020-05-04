@@ -12,6 +12,8 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
+load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
+load("//research/colab:build_defs.bzl", "colab_binary")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -24,7 +26,7 @@ exports_files([
 ])
 
 #######  DETECTORS #######
-py_library(
+pytype_strict_library(
     name = "base_detector",
     srcs = ["detectors/base_detector.py"],
     srcs_version = "PY3",
@@ -34,7 +36,7 @@ py_library(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "base_interpreter",
     srcs = ["detectors/base_interpreter.py"],
     srcs_version = "PY3",
@@ -44,7 +46,7 @@ py_library(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "isolation_forest_detector",
     srcs = ["detectors/isolation_forest_detector.py"],
     srcs_version = "PY3",
@@ -69,7 +71,7 @@ py_strict_test(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "neg_sample_neural_net_detector",
     srcs = ["detectors/neg_sample_neural_net_detector.py"],
     srcs_version = "PY3",
@@ -78,7 +80,6 @@ py_library(
         ":base_interpreter",
         ":sample_utils",
         "//third_party/py/absl/logging",
-        "//third_party/py/keras",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
         "//third_party/py/tensorflow",
@@ -101,7 +102,7 @@ py_strict_test(
 )
 
 ####### DATASETS #######
-py_library(
+pytype_strict_library(
     name = "base_dataset",
     srcs = ["datasets/base_dataset.py"],
     srcs_version = "PY3",
@@ -112,7 +113,7 @@ py_library(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "gaussian_mixture_dataset",
     srcs = ["datasets/gaussian_mixture_dataset.py"],
     srcs_version = "PY3",
@@ -135,7 +136,7 @@ py_strict_test(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "smart_buildings_dataset",
     srcs = ["datasets/smart_buildings_dataset.py"],
     data = [
@@ -166,10 +167,12 @@ py_strict_test(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "forestcover_dataset",
     srcs = ["datasets/forestcover_dataset.py"],
     data = [
+        "datasets/checksum",
+        "datasets/checksum/forest_cover.txt",
         "datasets/data/forestcover_README.md",
     ],
     srcs_version = "PY3",
@@ -202,10 +205,11 @@ py_strict_test(
 )
 
 ####### UTILS #######
-py_library(
+pytype_strict_library(
     name = "sample_utils",
     srcs = ["utils/sample_utils.py"],
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
     deps = [
         "//third_party/py/numpy",
         "//third_party/py/pandas",
@@ -225,7 +229,7 @@ py_strict_test(
     ],
 )
 
-py_library(
+pytype_strict_library(
     name = "evaluation_utils",
     srcs = ["utils/evaluation_utils.py"],
     srcs_version = "PY3",
@@ -244,5 +248,60 @@ py_strict_test(
     ],
 )
 
+pytype_strict_library(
+    name = "madi",
+    srcs = ["__init__.py"],
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":evaluation_utils",
+        ":forestcover_dataset",
+        ":gaussian_mixture_dataset",
+        ":isolation_forest_detector",
+        ":neg_sample_neural_net_detector",
+        ":sample_utils",
+        ":smart_buildings_dataset",
+    ],
+)
+
 # BEGIN GOOGLE-INTERNAL
+colab_binary(
+    # The name of this binary. (Name; optional; defaults to "notebook").
+    name = "madi_notebook",
+
+    # Data files to be baked into this binary. (List of labels; optional;
+    # defaults to []).
+    data = [
+        "datasets/checksum",
+        "datasets/checksum/forest_cover.txt",
+        "datasets/data/anomaly_detection_sample_1577622599.csv",
+        "datasets/data/anomaly_detection_sample_1577622599_README.md",
+    ],
+
+    # List of source [Python] files that will be executed on kernel start
+    # up, in the context of this notebook. (List of labels; optional;
+    # defaults to []).
+    kernel_init = [],
+
+    # .par options passed directly to the py_binary. (List of strings;
+    # optional; defaults to None).
+    paropts = None,
+
+    # Ensures the binary is Python 3.
+    python_version = "PY3",
+    srcs_version = "PY3",
+
+    # Same as *.visibility. (List of labels; optional; defaults to None).
+    visibility = ["//visibility:public"],
+
+    # List of dependencies for this notebook. Should be python libraries.
+    # (List of labels; optional; defaults to []).
+    deps = [
+        # Note that all the dm_notebook3 dependencies are already added by the
+        # extends field above.
+        # Additional custom dependencies can be added here.
+        ":madi",
+    ],
+)
+
 # END GOOGLE-INTERNAL

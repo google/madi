@@ -24,6 +24,7 @@ import tensorflow_datasets.public_api as tfd
 
 _DATASET_URL = 'https://archive.ics.uci.edu/ml/machine-learning-databases/covtype/covtype.data.gz'
 _DATA_FILE = 'covtype.data'
+_DATA_NAME = 'forest_cover'
 
 _COL_NAMES_SELECT = [
     'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',
@@ -48,7 +49,8 @@ _COL_NAMES_ALL = [
     'Soil_Type37', 'Soil_Type38', 'Soil_Type39', 'Soil_Type40', 'Cover_Type'
 ]
 
-_README_FILE = 'data/forestcover_README.md'
+_README_FILE = 'third_party/py/madi/datasets/data/forestcover_README.md'
+_CHECKSUM_DIR = 'google3/third_party/py/madi/datasets/checksum'
 
 
 class ForestCoverDataset(BaseDataset):
@@ -68,9 +70,15 @@ class ForestCoverDataset(BaseDataset):
     logging.info('datafile: %s', datafile_in)
 
     if not tf.io.gfile.exists(datafile_in):
+
+      logging.info('adding %s as checksum dir', _CHECKSUM_DIR)
+      tfd.core.download.checksums.add_checksums_dir(_CHECKSUM_DIR)
       dm = tfd.core.download.download_manager.DownloadManager(
-          download_dir=data_dir)
-      data_dir = dm.download_and_extract(_DATASET_URL)
+          download_dir=data_dir,
+          register_checksums=True,
+          dataset_name=_DATA_NAME)
+      raw_extracted = dm.download_and_extract(_DATASET_URL)
+      tf.io.gfile.copy(raw_extracted, datafile_in, overwrite=True)
 
     if not tf.io.gfile.exists(datafile_in):
       raise AssertionError('{} does not exist'.format(_DATA_FILE))
@@ -87,9 +95,7 @@ class ForestCoverDataset(BaseDataset):
     input_df['class_label'] = [int(t) for t in input_df['Cover_Type'] == 2]
     # Now we can drop the Cover_Type column, and keep only class_label.
     self._sample = input_df.drop(columns=['Cover_Type'])
-
-    readmefile = os.path.join(os.path.dirname(__file__), _README_FILE)
-    self._description = self._load_readme(readmefile)
+    self._description = self._load_readme(_README_FILE)
 
   @property
   def sample(self) -> pd.DataFrame:
@@ -97,8 +103,8 @@ class ForestCoverDataset(BaseDataset):
 
   @property
   def name(self) -> str:
-    return 'forest_cover'
+    return _DATA_NAME
 
   @property
   def description(self) -> str:
-    return None
+    return self._description

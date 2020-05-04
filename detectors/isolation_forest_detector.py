@@ -16,10 +16,11 @@
 from madi.detectors.base_detector import BaseAnomalyDetectionAlgorithm
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import IsolationForest
+import sklearn.ensemble
 
 
-class IsolationForestAd(IsolationForest, BaseAnomalyDetectionAlgorithm):
+class IsolationForestAd(sklearn.ensemble.IsolationForest,
+                        BaseAnomalyDetectionAlgorithm):
   """Wrapper class around the scikit-learn Isolation Forest Implementation."""
 
   def train_model(self, x_train: pd.DataFrame):

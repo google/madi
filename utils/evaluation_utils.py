@@ -14,9 +14,9 @@
 #     limitations under the License.
 """Utilties for performing evaluation of anomaly detection algorithms."""
 
-from sklearn.metrics import roc_auc_score
+import sklearn.metrics
 
 
 def compute_auc(y_actual, y_predicted):
   """Wraps computing the ROC AUC."""
-  return roc_auc_score(y_actual, y_predicted)
+  return sklearn.metrics.roc_auc_score(y_actual, y_predicted)
