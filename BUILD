@@ -14,6 +14,7 @@
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
 load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 load("//research/colab:build_defs.bzl", "colab_binary")
+load("//tools/build_defs/pkg:google.bzl", "pkg_binary_with_runfiles")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -209,7 +210,6 @@ pytype_strict_library(
     name = "forestcover_dataset",
     srcs = ["datasets/forestcover_dataset.py"],
     data = [
-        "datasets/checksum",
         "datasets/checksum/forest_cover.txt",
         "datasets/data/forestcover_README.md",
     ],
@@ -306,12 +306,11 @@ pytype_strict_library(
 # BEGIN GOOGLE-INTERNAL
 colab_binary(
     # The name of this binary. (Name; optional; defaults to "notebook").
-    name = "madi_notebook",
+    name = "notebook",
 
     # Data files to be baked into this binary. (List of labels; optional;
     # defaults to []).
     data = [
-        "datasets/checksum",
         "datasets/checksum/forest_cover.txt",
         "datasets/data/anomaly_detection_sample_1577622599.csv",
         "datasets/data/anomaly_detection_sample_1577622599_README.md",
@@ -341,6 +340,18 @@ colab_binary(
         # Additional custom dependencies can be added here.
         ":madi",
     ],
+)
+
+# This is used for the MPM.
+pkg_binary_with_runfiles(
+    name = "notebook_pkg",
+    binary = ":notebook",
+)
+
+genmpm(
+    name = "madi_notebook_mpm",
+    package_name = "third_party/py/madi/notebook",
+    deps = [":notebook_pkg"],
 )
 
 # END GOOGLE-INTERNAL
