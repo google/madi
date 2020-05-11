@@ -15,6 +15,9 @@
 """Base class for Interpreting Anomalies."""
 
 import abc
+from typing import Tuple, Dict, Optional
+
+import pandas as pd
 import six
 
 
@@ -23,6 +26,18 @@ class BaseAnomalyInterpreter(object):
   """Defines methods for interpreting anomalies."""
 
   @abc.abstractmethod
-  def blame(self, anomaly):
-    """Accepts a an array of values and returns a proportional blame."""
+  def blame(
+      self,
+      sample_row: pd.Series
+  ) -> (Tuple[Dict[str, float], Dict[str, float], Optional[pd.DataFrame]]):
+    """Performs variable attribution.
+
+    Args:
+      sample_row: a pd.Series with feature names as cols and values.
+
+    Returns:
+      Attribution Dict with variable name key, and proportional blame as value
+      Reference Dict: Nearest baseline point with variable name as kay
+      Gradiant Matrix useful to disply and understand the gradiants.
+    """
     pass

@@ -60,6 +60,64 @@ class NegSampleNeuralNetDetectorTest(absltest.TestCase):
 
     self.assertGreater(auc, 0.98)
 
+  def test_gaussian_mixture_io(self):
+    """Tests NS-NN on single-mode Gaussian."""
+
+    model_dir = self.create_tempdir()
+    sample_ratio = 0.05
+    ds = gaussian_mixture_dataset.GaussianMixtureDataset(
+        n_dim=4,
+        n_modes=1,
+        n_pts_pos=2400,
+        sample_ratio=sample_ratio,
+        upper_bound=3,
+        lower_bound=-3)
+
+    log_dir = self.create_tempdir()
+    split_ix = int(len(ds.sample) * 0.8)
+    training_sample = ds.sample.iloc[:split_ix]
+    test_sample = ds.sample.iloc[split_ix:]
+
+    # Train a new model.
+    ad_in = NegativeSamplingNeuralNetworkAD(
+        sample_ratio=3.0,
+        sample_delta=0.05,
+        batch_size=32,
+        steps_per_epoch=16,
+        epochs=20,
+        dropout=0.5,
+        layer_width=64,
+        n_hidden_layers=2,
+        log_dir=log_dir)
+
+    ad_in.train_model(x_train=training_sample.drop(columns=['class_label']))
+
+    # Save the model to model_dir.
+    ad_in.save_model(model_dir)
+
+    # Create a new model with the same parameters.
+    ad_out = NegativeSamplingNeuralNetworkAD(
+        sample_ratio=3.0,
+        sample_delta=0.05,
+        batch_size=32,
+        steps_per_epoch=16,
+        epochs=20,
+        dropout=0.5,
+        layer_width=64,
+        n_hidden_layers=2,
+        log_dir=log_dir)
+    # Load the previous trained and saved model.
+    ad_out.load_model(model_dir)
+
+    # Get some predictions and ensure the loaded model predicts accurately.
+    y_actual = test_sample['class_label']
+    xy_predicted = ad_out.predict(test_sample.drop(columns=['class_label']))
+
+    auc = evaluation_utils.compute_auc(
+        y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
+
+    self.assertGreater(auc, 0.98)
+
 
 if __name__ == '__main__':
   absltest.main()

@@ -14,19 +14,19 @@
 #     limitations under the License.
 """Anomaly Detector based on Negative Sampling Neural Network (NS-NN)."""
 
+import os
 from absl import logging
 from madi.detectors.base_detector import BaseAnomalyDetectionAlgorithm
-from madi.detectors.base_interpreter import BaseAnomalyInterpreter
 import madi.utils.sample_utils as sample_utils
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 
 _SHUFFLE_BUFFERSIZE = 500
+_MODEL_FILENAME = 'model-multivariate-ad'
 
 
-class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
-                                      BaseAnomalyInterpreter):
+class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
   """Anomaly detection using negative sampling and a neural net classifier."""
 
   def __init__(self,
@@ -122,7 +122,21 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
     sample_df['class_prob'] = y_hat
     return sample_df
 
-  def _get_model(self, input_dim, dropout, layer_width, n_hidden_layers):
+  def _get_model(self, input_dim: int, dropout: float, layer_width: int,
+                 n_hidden_layers: int) -> tf.keras.Sequential:
+    """Creates a Neural Network model for Anomaly Detection.
+
+    Creates a simple stack of dense/dropout layers with equal width.
+
+    Args:
+      input_dim: width of the input layer
+      dropout: dropout probability for each hidden layer
+      layer_width: hidden layer width
+      n_hidden_layers: number of hidden layers
+
+    Returns:
+      tf.keras.Sequential model.
+    """
     model = tf.keras.Sequential()
     model.add(
         tf.keras.layers.Dense(
@@ -141,6 +155,14 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm,
         metrics=[tf.keras.metrics.binary_accuracy])
     return model
 
-  def blame(self, anomaly):
-    """Provides interpreration using integrated gradients."""
-    return None
+  def save_model(self, model_dir: str) -> None:
+    """Saves the trained AD model to the model directory model_dir."""
+    model_file_path = os.path.join(model_dir, _MODEL_FILENAME)
+    tf.keras.models.save_model(self._model, model_file_path, overwrite=True)
+    logging.info('Sucessfully wrote the model to %s', model_file_path)
+
+  def load_model(self, model_dir: str) -> None:
+    """Loads the trained AD model from the model directory model_dir."""
+    model_file_path = os.path.join(model_dir, _MODEL_FILENAME)
+    self._model = tf.keras.models.load_model(model_file_path)
+    logging.info('Successfully loaded model from %s', model_file_path)

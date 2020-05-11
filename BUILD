@@ -41,7 +41,7 @@ pytype_strict_library(
     srcs = ["detectors/base_interpreter.py"],
     srcs_version = "PY3",
     deps = [
-        "//third_party/py/numpy",
+        "//third_party/py/pandas",
         "//third_party/py/six",
     ],
 )
@@ -98,6 +98,44 @@ py_strict_test(
         "//third_party/py/absl/logging",
         "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
+    ],
+)
+
+pytype_strict_library(
+    name = "integrated_gradients_interpreter",
+    srcs = ["detectors/integrated_gradients_interpreter.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":base_interpreter",
+        ":sample_utils",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/scipy",
+        "//third_party/py/tensorflow",
+    ],
+)
+
+py_strict_test(
+    name = "integrated_gradients_interpreter_test",
+    srcs = ["detectors/integrated_gradients_interpreter_test.py"],
+    data = [
+        "detectors/test_data/baseline.csv",
+        "detectors/test_data/model-multivariate-ad/saved_model.pb",
+        "detectors/test_data/model-multivariate-ad/variables/variables.data-00000-of-00001",
+        "detectors/test_data/model-multivariate-ad/variables/variables.index",
+        "detectors/test_data/positive_sample.csv",
+    ],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":integrated_gradients_interpreter",
+        ":sample_utils",
+        "//third_party/py/absl/logging",
+        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -257,6 +295,7 @@ pytype_strict_library(
         ":evaluation_utils",
         ":forestcover_dataset",
         ":gaussian_mixture_dataset",
+        ":integrated_gradients_interpreter",
         ":isolation_forest_detector",
         ":neg_sample_neural_net_detector",
         ":sample_utils",
