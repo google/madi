@@ -348,9 +348,11 @@ pkg_binary_with_runfiles(
     binary = ":notebook",
 )
 
+#TODO (sipple): update ACLs for creating durable third-party MPMs.
 genmpm(
     name = "madi_notebook_mpm",
     package_name = "third_party/py/madi/notebook",
+    temporal = 1,
     deps = [":notebook_pkg"],
 )
 
