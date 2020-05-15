@@ -17,7 +17,6 @@ from typing import Tuple, Dict, Optional
 
 from absl import logging
 from madi.detectors.base_interpreter import BaseAnomalyInterpreter
-import madi.utils.sample_utils as sample_utils
 import numpy as np
 import pandas as pd
 from scipy.spatial import distance
@@ -49,8 +48,7 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
 
   def __init__(self,
                model: tf.keras.Sequential,
-               df_pos: pd.DataFrame,
-               normalization_info: Dict[str, sample_utils.Variable],
+               df_pos_normalized: pd.DataFrame,
                min_baseline_class_conf: float,
                baseline_size_limit: int,
                num_steps_integrated_gradients: int = 2000):
@@ -58,8 +56,7 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
 
     Args:
       model: tf.keras.Sequential model from NS-NN Anomaly Detector.
-      df_pos: Dataframe with positive sample (not normalized).
-      normalization_info: dict to normalize each column in df_pos.
+      df_pos_normalized: Dataframe with positive sample (normalized).
       min_baseline_class_conf: minimum classification score to be in baseline
       baseline_size_limit: choose the top confr that meet the min conf
       num_steps_integrated_gradients: number steps in integrated gradients.
@@ -71,12 +68,10 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
 
     # To compute integrated gradients we need a model.
     self._model = model
-    self._normalization_info = normalization_info
     self._num_steps_integrated_gradients = num_steps_integrated_gradients
     self._df_baseline, max_class_confidence = select_baseline(
-        df_pos=df_pos,
+        df_pos_normalized=df_pos_normalized,
         model=model,
-        normalization_info=normalization_info,
         min_p=min_baseline_class_conf,
         max_count=baseline_size_limit)
     if self._df_baseline.empty:
@@ -99,8 +94,8 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
     """Returns variable attribution between sample and reference.
 
     Args:
-      sample: observed vector length N
-      reference: reference vector length N, as described in IG paper
+      sample: normalized observed vector length N
+      reference: normalized reference vector length N, as described in IG paper
       num_steps: number of steps to approximate the path integral between sample
         and reference.  Returns a normalized vector length N, that indicates
         magnitude of the variables in [-1, 1].
@@ -134,50 +129,46 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
 
   def blame(
       self,
-      sample_row: pd.Series,
+      observation_normalized: pd.Series,
   ) -> (Tuple[Dict[str, float], Dict[str, float], Optional[pd.DataFrame]]):
     """Performs variable attribution using a baseline and integrated grads.
 
     Args:
-      sample_row: a pd.Series with feature names as cols and values.
+      observation_normalized: original feature names as cols and values.
 
     Returns:
       Attribution Dict with variable name key, and proportional blame as value
-      Reference Dict: Nearest baseline point with variable name as kay
+      Reference Dict: Nearest original baseline point with variable name as kay
       Gradiant Matrix useful to disply and understand the gradiants.
     """
-    column_order = sample_utils.get_column_order(self._normalization_info)
+
     attribution_dict = {}
     reference_point_dict = {}
-    example = np.array(list(sample_row[column_order]))
 
+    observation_normalized_array = observation_normalized.to_numpy()
     # Pull out the point in the baseline sample.
     nearest_reference_index, _ = find_nearest_euclidean(
-        self._df_baseline[column_order], example)
+        self._df_baseline, observation_normalized_array)
 
     # Use the normalized reference point for integrated gradients.
     reference_point_normalized = self._df_baseline.loc[[
         nearest_reference_index
     ]]
 
-    # Use the denormalized reference point as the expected value info.
-    reference_point = sample_utils.denormalize(reference_point_normalized,
-                                               self._normalization_info)
-
     # Use integrated gradients to compute variable attribution info,
     # including reference point and integrated gradients attribution.
     explanation, mat_grad = self.explain(
-        example,
-        reference_point_normalized.iloc[0][column_order].to_numpy(),
+        observation_normalized_array,
+        reference_point_normalized.iloc[0].to_numpy(),
         num_steps=self._num_steps_integrated_gradients)
 
-    df_grad = pd.DataFrame(mat_grad, columns=column_order)
+    df_grad = pd.DataFrame(mat_grad)
 
     # Attribution is the proportional explanation.
     attribution = [abs(v) for v in explanation]
-    for i, column in enumerate(column_order):
+    for i, column in enumerate(observation_normalized.index):
       attribution_dict[column] = attribution[i]
-      reference_point_dict[column] = reference_point.iloc[0][column]
+      reference_point_dict[column] = reference_point_normalized.iloc[0][column]
 
     return attribution_dict, reference_point_dict, df_grad
 
@@ -209,9 +200,8 @@ def find_nearest_euclidean(df_reference: pd.DataFrame,
   return nearest_ix, distances[nearest_ix]
 
 
-def select_baseline(df_pos: pd.DataFrame,
+def select_baseline(df_pos_normalized: pd.DataFrame,
                     model: tf.keras.Sequential,
-                    normalization_info: Dict[str, sample_utils.Variable],
                     min_p: float = 0.85,
                     max_count: int = 100):
   """Selects the representative subsamnple that will be used as baselines.
@@ -221,25 +211,23 @@ def select_baseline(df_pos: pd.DataFrame,
   Sampling (Sipple 2020).
 
   Args:
-    df_pos: data frame of the not-normalized positive sample.
+    df_pos_normalized: data frame of the normalized positive sample.
     model: classifier model from NS-NN.
-    normalization_info: variables with their means and standard deviations
     min_p: minimum class score to be be considered as a baseline normal.
     max_count: maximum number of reference points to be selected.
 
   Returns:
-    data frame of the *normalized* baseline
+    data frame of the normalized baseline and the maximum conf score
   """
-  drop_cols = list(set(df_pos) - set(normalization_info))
-  df_pos_examples = df_pos.drop(columns=drop_cols)
-  df_pos_normalized = sample_utils.normalize(df_pos_examples,
-                                             normalization_info)
   x = np.float32(np.matrix(df_pos_normalized))
   y_hat = model.predict(x, verbose=1, steps=1)
-  df_pos[_CLASS_PROB_LABEL] = y_hat
-  high_scoring_predictions = df_pos[df_pos[_CLASS_PROB_LABEL] >= min_p]
+  df_pos_normalized[_CLASS_PROB_LABEL] = y_hat
+  high_scoring_predictions = df_pos_normalized[
+      df_pos_normalized[_CLASS_PROB_LABEL] >= min_p]
   high_scoring_predictions = high_scoring_predictions.sort_values(
       by=_CLASS_PROB_LABEL, ascending=False)
+  high_scoring_predictions = high_scoring_predictions.drop(
+      columns=[_CLASS_PROB_LABEL])
   return high_scoring_predictions[:max_count], float(max(y_hat))
 
 

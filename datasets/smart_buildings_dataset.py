@@ -17,7 +17,6 @@ from madi.datasets.base_dataset import BaseDataset
 import pandas as pd
 import tensorflow as tf
 
-
 _DATA_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599.csv"
 _README_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599_README.md"
 
@@ -25,9 +24,11 @@ _README_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_15776
 class SmartBuildingsDataset(BaseDataset):
   """Smart Buildings data set for Multivariate Anomaly Detection."""
 
-  def __init__(self):
-    self._sample = self._load_data_file(_DATA_FILE)
-    self._description = self._load_readme(_README_FILE)
+  def __init__(self,
+               datafilepath: str = _DATA_FILE,
+               readmefilepath: str = _README_FILE):
+    self._sample = self._load_data_file(datafilepath)
+    self._description = self._load_readme(readmefilepath)
 
   @property
   def sample(self) -> pd.DataFrame:
@@ -48,4 +49,3 @@ class SmartBuildingsDataset(BaseDataset):
     with tf.io.gfile.GFile(datafile) as csv_file:
       sample = pd.read_csv(csv_file, header="infer", index_col=0)
     return sample
-

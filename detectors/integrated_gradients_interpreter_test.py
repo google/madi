@@ -22,12 +22,10 @@ import madi.utils.sample_utils as sample_utils
 import numpy as np
 import numpy.testing
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
 import tensorflow as tf
 
 _TEST_DATA = 'test_data'
 _POSITIVE_SAMPLE_FILE = 'positive_sample.csv'
-_BASELINE_FILE = 'baseline.csv'
 _MODEL_FILENAME = 'model-multivariate-ad'
 
 _TEST_ARRAY_1 = [
@@ -75,48 +73,48 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
     test_anomaly = pd.Series(data=anomalous_data, index=_FIELDS)
     actual_attribution_dict, actual_reference_point_dict, _ = interpreter.blame(
         test_anomaly)
+
     expected_attribution_dict = {
-        'x001': 0.0,
-        'x002': 0.0,
-        'x003': 0.348,
-        'x004': 0.0,
-        'x005': 0.0,
-        'x006': 0.0,
-        'x007': 0.0,
-        'x008': 0.0,
-        'x009': 0.0,
-        'x010': 0.0,
-        'x011': 0.0,
-        'x012': 0.0,
-        'x013': 0.0,
-        'x014': 0.0,
-        'x015': 0.652,
-        'x016': 0.0
+        'x001': 0.002187757633945183,
+        'x002': 0.002976363240582482,
+        'x003': 0.2646628511083332,
+        'x004': 0.03219711570075021,
+        'x005': 0.013916306551774987,
+        'x006': 0.02314098749698794,
+        'x007': 0.010694018796641655,
+        'x008': 0.021948330285941772,
+        'x009': 0.011765977701929463,
+        'x010': 0.013192013274398609,
+        'x011': 0.023741249534000843,
+        'x012': 0.05950213360248674,
+        'x013': 0.026055538813884584,
+        'x014': 0.016518005104400192,
+        'x015': 0.46945848858672456,
+        'x016': 0.008042862567217661
     }
     expected_reference_point_dict = {
-        'x001': 8.759257846003909,
-        'x002': 4.52323561780342,
-        'x003': 7.699828364950935,
-        'x004': 9.779232288525447,
-        'x005': 6.499157309002835,
-        'x006': 5.824615852080057,
-        'x007': 7.01870963226138,
-        'x008': 4.1416220431627195,
-        'x009': 6.729712284718885,
-        'x010': 6.2612027775591965,
-        'x011': 3.9207019605450446,
-        'x012': 7.050307484508083,
-        'x013': 6.017051998893703,
-        'x014': 4.721141234703653,
-        'x015': 8.854144729240176,
-        'x016': 8.940268672582361
+        'x001': 1.0633042313064187,
+        'x002': 1.051456808162845,
+        'x003': 1.3846602854823593,
+        'x004': 1.0978800623570324,
+        'x005': 1.4325814172537334,
+        'x006': 1.1697147545439555,
+        'x007': 0.5788864804073347,
+        'x008': 1.2042111655483745,
+        'x009': 1.1065457242952912,
+        'x010': 0.9953755474877946,
+        'x011': 0.9089955288877173,
+        'x012': 1.0400328217614323,
+        'x013': 1.23407202478703,
+        'x014': 1.2931078015872917,
+        'x015': 1.5710934132687078,
+        'x016': 1.0148944337105463
     }
-
     for col_name in expected_attribution_dict:
       self.assertAlmostEqual(actual_attribution_dict[col_name],
-                             expected_attribution_dict[col_name], 3)
+                             expected_attribution_dict[col_name], 5)
       self.assertAlmostEqual(actual_reference_point_dict[col_name],
-                             expected_reference_point_dict[col_name], 3)
+                             expected_reference_point_dict[col_name], 5)
 
   def test_explain_1d(self):
 
@@ -211,7 +209,8 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
 
   def test_find_nearest_euclidean(self):
     df_baseline = pd.read_csv(
-        os.path.join(os.path.dirname(__file__), _TEST_DATA, _BASELINE_FILE),
+        os.path.join(
+            os.path.dirname(__file__), _TEST_DATA, _POSITIVE_SAMPLE_FILE),
         index_col=0)
     nearest_ix, nearest_dist = madi.detectors.integrated_gradients_interpreter.find_nearest_euclidean(
         df_baseline, np.array(_TEST_ARRAY_4))
@@ -245,28 +244,128 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
             os.path.dirname(__file__), _TEST_DATA, _POSITIVE_SAMPLE_FILE),
         index_col=0)
 
-    df_baseline_expected = pd.read_csv(
-        os.path.join(os.path.dirname(__file__), _TEST_DATA, _BASELINE_FILE),
-        index_col=0)
+    df_baseline_actual, max_cnf = madi.detectors.integrated_gradients_interpreter.select_baseline(
+        df_pos_normalized=df_pos, model=model, min_p=min_p, max_count=max_count)
 
-    df_baseline_actual, _ = madi.detectors.integrated_gradients_interpreter.select_baseline(
-        df_pos=df_pos,
-        model=model,
-        normalization_info=sample_utils.get_normalization_info(df_pos),
-        min_p=min_p,
-        max_count=max_count)
-    self.assertLen(df_baseline_actual, max_count)
-    # Drop the probability column, loosen precison a little, and ignore actual
-    # indicies.
-    assert_frame_equal(
-        df_baseline_actual.drop(columns=['class_prob']).reset_index(drop=True),
-        df_baseline_expected.iloc[:max_count].reset_index(drop=True),
-        check_like=True,
-        check_exact=False,
-        check_less_precise=3)
-    self.assertGreaterEqual(min(df_baseline_actual['class_prob']), min_p)
+    expected_indices = [
+        290, 1041, 1482, 207, 571, 640, 3090, 830, 2088, 1176, 1722, 1551, 2023,
+        1701, 2186, 83, 943, 3495, 656, 548, 2261, 1086, 1588, 1829, 3742, 1406,
+        11, 2230, 536, 2162, 124, 2436, 864, 756, 1431, 33, 1862, 996, 2132,
+        1646, 1944, 831, 1358, 2284, 2963, 414, 773, 1134, 1835, 1391, 386,
+        2434, 673, 403, 512, 2847, 1186, 4099, 41, 694, 591, 1344, 412, 1772,
+        1102, 1519, 2142, 165, 3268, 560, 1329, 4743, 4481, 2297, 610, 1528, 64,
+        2305, 1197, 2371, 335, 1225, 1892, 2926, 1417, 411, 2383, 806, 1441,
+        375, 152, 2183, 3136, 510, 1459, 3108, 1242, 1049, 1389, 342
+    ]
+    self.assertListEqual(df_baseline_actual.index.tolist(), expected_indices)
+    self.assertGreaterEqual(max_cnf, min_p)
 
-  def _get_test_interpreter(self, min_class_confidence, max_baseline_size):
+  def test_completeness_axiom_on_large_perturbation(self):
+    """Tests the Completeness Axiom from Sundararajan, Tuly, and Yan 2017.
+
+    Axiomatic Attribution for Deep Nets: https://arxiv.org/pdf/1703.01365.pdf
+
+    The attributions must add up to the difference between the anomaly score
+    at the input and the baseline.
+
+    In this case we choose one baseline point and one very anomalous point, so
+    the difference ought to be nearly 1.
+    """
+    num_steps = 1000
+    interpreter = self._get_test_interpreter(0.95, 250, num_steps)
+
+    # Create an anomalous data point by inducing a large perturbation.
+    anomalous_data = np.array(_TEST_ARRAY_4) + np.array(
+        [0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0])
+    test_anomaly = pd.Series(data=anomalous_data, index=_FIELDS)
+
+    # Get the attribution, where df_grad contains the gradients at each point.
+    _, reference_point_dict, df_grad = interpreter.blame(test_anomaly)
+
+    # Convert the nearest reference point, and get models assessment.
+    nearest_reference_point = pd.Series(reference_point_dict)
+    df_nearest_reference_point = nearest_reference_point.to_frame().T
+    x = np.float32(np.matrix(df_nearest_reference_point))
+    reference_point_score = interpreter._model.predict(x, verbose=1, steps=1)[0]
+    self.assertAlmostEqual(reference_point_score, 0.966, delta=0.001)
+
+    # Get the model's score for the anomaly. Should be very small.
+    anomaly_score = interpreter._model.predict(
+        np.matrix(anomalous_data), verbose=1, steps=1)[0]
+
+    self.assertAlmostEqual(anomaly_score, 0.00, delta=0.001)
+
+    # Verify that the gradient matrix contains exactly num_steps.
+    self.assertLen(df_grad, num_steps)
+
+    # Compute the difference between reference point and the anomaly.
+    delta = np.array(nearest_reference_point - test_anomaly)
+
+    # Compute the score difference.
+    score_diff = reference_point_score - anomaly_score
+
+    # Compute equation 3 from Sundararajan, Tuly, and Yan 2017.
+    cumulative = (np.array(df_grad.cumsum(axis=0).iloc[-1] / float(num_steps)) *
+                  delta).sum()
+
+    # Assert the completeness axiom.
+    self.assertAlmostEqual(score_diff, cumulative, delta=0.001)
+
+  def test_completeness_axiom_on_small_perturbation(self):
+    """Tests the Completeness Axiom from Sundararajan, Tuly, and Yan 2017.
+
+    Axiomatic Attribution for Deep Nets: https://arxiv.org/pdf/1703.01365.pdf
+
+    The attributions must add up to the difference between the anomaly score
+    at the input and the baseline.
+
+    In this case we choose one baseline point and one slightly anomalous point,
+    so the difference ought to be nearly 1.
+    """
+    num_steps = 1000
+    interpreter = self._get_test_interpreter(0.95, 250, num_steps)
+
+    # Create an anomalous data point by inducing a large perturbation.
+    anomalous_data = np.array(_TEST_ARRAY_4) + np.array(
+        [0, 0, 0, 0, 0, 0, 0, 0.05, 0, 0, 0, 0, 0, 0, 0.05, 0])
+    test_anomaly = pd.Series(data=anomalous_data, index=_FIELDS)
+
+    # Get the attribution, where df_grad contains the gradients at each point.
+    _, reference_point_dict, df_grad = interpreter.blame(test_anomaly)
+
+    # Convert the nearest reference point, and get models assessment.
+    nearest_reference_point = pd.Series(reference_point_dict)
+    df_nearest_reference_point = nearest_reference_point.to_frame().T
+    x = np.float32(np.matrix(df_nearest_reference_point))
+    reference_point_score = interpreter._model.predict(x, verbose=1, steps=1)[0]
+    self.assertAlmostEqual(reference_point_score, 0.967, delta=0.001)
+
+    # Get the model's score for the anomaly. Should be very small.
+    anomaly_score = interpreter._model.predict(
+        np.matrix(anomalous_data), verbose=1, steps=1)[0]
+
+    self.assertAlmostEqual(anomaly_score, 0.169, delta=0.001)
+
+    # Verify that the gradient matrix contains exactly num_steps.
+    self.assertLen(df_grad, num_steps)
+
+    # Compute the difference between reference point and the anomaly.
+    delta = np.array(nearest_reference_point - test_anomaly)
+
+    # Compute the score difference.
+    score_diff = reference_point_score - anomaly_score
+
+    # Compute equation 3 from Sundararajan, Tuly, and Yan 2017.
+    cumulative = (np.array(df_grad.cumsum(axis=0).iloc[-1] / float(num_steps)) *
+                  delta).sum()
+
+    # Assert the completeness axiom.
+    self.assertAlmostEqual(score_diff, cumulative, delta=0.001)
+
+  def _get_test_interpreter(self,
+                            min_class_confidence,
+                            max_baseline_size,
+                            num_steps_integrated_gradients=2000):
     df_pos = pd.read_csv(
         os.path.join(
             os.path.dirname(__file__), _TEST_DATA, _POSITIVE_SAMPLE_FILE),
@@ -276,9 +375,11 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
     model = tf.keras.models.load_model(model_file_path)
 
     # Load the previous trained and saved model.
+    normalization_info = sample_utils.get_normalization_info(df_pos)
+    df_pos_normalized = sample_utils.normalize(df_pos, normalization_info)
     interpreter = madi.detectors.integrated_gradients_interpreter.IntegratedGradientsInterpreter(
-        model, df_pos, sample_utils.get_normalization_info(df_pos),
-        min_class_confidence, max_baseline_size)
+        model, df_pos_normalized, min_class_confidence, max_baseline_size,
+        num_steps_integrated_gradients)
     return interpreter
 
 

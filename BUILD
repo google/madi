@@ -14,7 +14,6 @@
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
 load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 load("//research/colab:build_defs.bzl", "colab_binary")
-load("//tools/build_defs/pkg:google.bzl", "pkg_binary_with_runfiles")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -121,7 +120,6 @@ py_strict_test(
     name = "integrated_gradients_interpreter_test",
     srcs = ["detectors/integrated_gradients_interpreter_test.py"],
     data = [
-        "detectors/test_data/baseline.csv",
         "detectors/test_data/model-multivariate-ad/saved_model.pb",
         "detectors/test_data/model-multivariate-ad/variables/variables.data-00000-of-00001",
         "detectors/test_data/model-multivariate-ad/variables/variables.index",
@@ -340,20 +338,6 @@ colab_binary(
         # Additional custom dependencies can be added here.
         ":madi",
     ],
-)
-
-# This is used for the MPM.
-pkg_binary_with_runfiles(
-    name = "notebook_pkg",
-    binary = ":notebook",
-)
-
-#TODO (sipple): update ACLs for creating durable third-party MPMs.
-genmpm(
-    name = "madi_notebook_mpm",
-    package_name = "third_party/py/madi/notebook",
-    temporal = 1,
-    deps = [":notebook_pkg"],
 )
 
 # END GOOGLE-INTERNAL
