@@ -249,6 +249,7 @@ pytype_strict_library(
     deps = [
         "//third_party/py/numpy",
         "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 

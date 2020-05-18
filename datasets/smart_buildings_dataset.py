@@ -14,8 +14,10 @@
 #     limitations under the License.
 """Provides access to the Smart Buidlings dataset for Anomaly Detection."""
 from madi.datasets.base_dataset import BaseDataset
+import numpy as np
 import pandas as pd
 import tensorflow as tf
+
 
 _DATA_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599.csv"
 _README_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599_README.md"
@@ -48,4 +50,6 @@ class SmartBuildingsDataset(BaseDataset):
       raise AssertionError("{} does not exist".format(datafile))
     with tf.io.gfile.GFile(datafile) as csv_file:
       sample = pd.read_csv(csv_file, header="infer", index_col=0)
+
+    sample = sample.reindex(np.random.permutation(sample.index))
     return sample

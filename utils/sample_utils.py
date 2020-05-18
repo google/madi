@@ -18,6 +18,7 @@ from typing import List, Dict
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 
 class Variable(object):
@@ -94,6 +95,43 @@ def denormalize(df_norm: pd.DataFrame,
     df[column] = df_norm[column] * normalization_info[
         column].std + normalization_info[column].mean
   return df
+
+
+def write_normalization_info(normalization_info: Dict[str, Variable],
+                             filename: str):
+  """Writes variable normalization info to CSV."""
+
+  def to_df(normalization_info):
+    df = pd.DataFrame(columns=["index", "mean", "std"])
+    for variable in normalization_info:
+      df.loc[variable] = [
+          normalization_info[variable].index, normalization_info[variable].mean,
+          normalization_info[variable].std
+      ]
+    return df
+
+  with tf.io.gfile.GFile(filename, "w") as csv_file:
+    to_df(normalization_info).to_csv(csv_file, sep="\t")
+
+
+def read_normalization_info(
+    filename: str) -> Dict[str, Variable]:
+  """Reads variable normalization info from CSV."""
+
+  def from_df(df):
+    normalization_info = {}
+    for name, row in df.iterrows():
+      normalization_info[name] = Variable(
+          row["index"], name, row["mean"], row["std"])
+    return normalization_info
+
+  normalization_info = {}
+  if not tf.io.gfile.exists(filename):
+    raise AssertionError("{} does not exist".format(filename))
+  with tf.io.gfile.GFile(filename, "r") as csv_file:
+    df = pd.read_csv(csv_file, header=0, index_col=0, sep="\t")
+    normalization_info = from_df(df)
+  return normalization_info
 
 
 def get_neg_sample(pos_sample: pd.DataFrame,

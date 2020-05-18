@@ -24,6 +24,7 @@ import tensorflow as tf
 
 _SHUFFLE_BUFFERSIZE = 500
 _MODEL_FILENAME = 'model-multivariate-ad'
+_NORMALIZATION_FILENAME = 'normalization_info'
 
 
 class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
@@ -52,6 +53,7 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     self._log_dir = log_dir
     self._tpu_worker = tpu_worker
     self._batch_size = batch_size
+    self._normalization_info = None
     logging.info('TensorFlow version %s', tf.version.VERSION)
 
     # Especially with TPUs, it's useful to destroy the current TF graph and
@@ -64,19 +66,24 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     Args:
       x_train: dataframe with dimensions as columns.
     """
-    training_sample = sample_utils.apply_negative_sample(
-        positive_sample=x_train,
+    self._normalization_info = sample_utils.get_normalization_info(x_train)
+    column_order = sample_utils.get_column_order(self._normalization_info)
+    normalized_x_train = sample_utils.normalize(x_train,
+                                                self._normalization_info)
+
+    normalized_training_sample = sample_utils.apply_negative_sample(
+        positive_sample=normalized_x_train,
         sample_ratio=self._sample_ratio,
         sample_delta=self._sample_delta)
 
-    x = np.float32(np.matrix(training_sample.drop(columns=['class_label'])))
-    y = np.float32(np.array(training_sample['class_label']))
+    x = np.float32(np.matrix(normalized_training_sample[column_order]))
+    y = np.float32(np.array(normalized_training_sample['class_label']))
     # create dataset objects from the arrays
     dx = tf.data.Dataset.from_tensor_slices(x)
     dy = tf.data.Dataset.from_tensor_slices(y)
 
     logging.info('Training ns-nn with:')
-    logging.info(training_sample['class_label'].value_counts())
+    logging.info(normalized_training_sample['class_label'].value_counts())
 
     # zip the two datasets together
     train_dataset = tf.data.Dataset.zip(
@@ -117,7 +124,10 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
       DataFrame as sample_df, with colum 'class_prob', prob of Normal class.
     """
 
-    x = np.float32(np.matrix(sample_df))
+    sample_df_normalized = sample_utils.normalize(sample_df,
+                                                  self._normalization_info)
+    column_order = sample_utils.get_column_order(self._normalization_info)
+    x = np.float32(np.matrix(sample_df_normalized[column_order]))
     y_hat = self._model.predict(x, verbose=1, steps=1)
     sample_df['class_prob'] = y_hat
     return sample_df
@@ -160,9 +170,19 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     model_file_path = os.path.join(model_dir, _MODEL_FILENAME)
     tf.keras.models.save_model(self._model, model_file_path, overwrite=True)
     logging.info('Sucessfully wrote the model to %s', model_file_path)
+    normalization_file_path = os.path.join(model_dir, _NORMALIZATION_FILENAME)
+    sample_utils.write_normalization_info(self._normalization_info,
+                                          normalization_file_path)
+    logging.info('Sucessfully saved normalization info to %s',
+                 normalization_file_path)
 
   def load_model(self, model_dir: str) -> None:
     """Loads the trained AD model from the model directory model_dir."""
     model_file_path = os.path.join(model_dir, _MODEL_FILENAME)
     self._model = tf.keras.models.load_model(model_file_path)
     logging.info('Successfully loaded model from %s', model_file_path)
+    normalization_file_path = os.path.join(model_dir, _NORMALIZATION_FILENAME)
+    self._normalization_info = sample_utils.read_normalization_info(
+        normalization_file_path)
+    logging.info('Sucessfully read normalization info from %s',
+                 normalization_file_path)
