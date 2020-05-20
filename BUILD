@@ -72,6 +72,58 @@ py_strict_test(
 )
 
 pytype_strict_library(
+    name = "one_class_svm",
+    srcs = ["detectors/one_class_svm.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":base_detector",
+        ":sample_utils",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/sklearn",
+    ],
+)
+
+py_strict_test(
+    name = "one_class_svm_test",
+    srcs = ["detectors/one_class_svm_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":evaluation_utils",
+        ":gaussian_mixture_dataset",
+        ":one_class_svm",
+        "//third_party/py/absl/testing:absltest",
+    ],
+)
+
+pytype_strict_library(
+    name = "neg_sample_random_forest",
+    srcs = ["detectors/neg_sample_random_forest.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":base_detector",
+        ":sample_utils",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/sklearn",
+    ],
+)
+
+py_strict_test(
+    name = "neg_sample_random_forest_test",
+    srcs = ["detectors/neg_sample_random_forest_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":evaluation_utils",
+        ":gaussian_mixture_dataset",
+        ":neg_sample_random_forest",
+        "//third_party/py/absl/testing:absltest",
+    ],
+)
+
+pytype_strict_library(
     name = "neg_sample_neural_net_detector",
     srcs = ["detectors/neg_sample_neural_net_detector.py"],
     srcs_version = "PY3",
