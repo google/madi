@@ -19,5 +19,7 @@ import madi.datasets.smart_buildings_dataset
 import madi.detectors.integrated_gradients_interpreter
 import madi.detectors.isolation_forest_detector
 import madi.detectors.neg_sample_neural_net_detector
+import madi.detectors.neg_sample_random_forest_detector
+import madi.detectors.one_class_svm
 import madi.utils.evaluation_utils
 import madi.utils.sample_utils
