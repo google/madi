@@ -1,0 +1,24 @@
+load("//devtools/copybara/library/global_authors", "piper_whitelisted")
+
+google3_path = "third_party/py/madi"
+
+default_author = "Corp Eng ML Team <ce-ml-team@google.com>"
+author = piper_whitelisted(default_author, {})
+
+core.workflow(
+    name = "piper_to_gob",
+    origin = piper.origin(),
+    origin_files = glob(
+        include = ["google3/third_party/py/madi/**"],
+        exclude = ["google3/third_party/py/madi/google/**"],
+    ),
+    destination = git.destination(
+        url = "rpc://user/sipple/madi",
+    ),
+    authoring = author,
+    transformations = [
+        core.move("google3/third_party/py/madi", ""),
+        core.move("WORKSPACE.bazel", "WORKSPACE"),
+        leakr.check(),
+    ]
+)
