@@ -349,6 +349,8 @@ pytype_strict_library(
         ":integrated_gradients_interpreter",
         ":isolation_forest_detector",
         ":neg_sample_neural_net_detector",
+        ":neg_sample_random_forest",
+        ":one_class_svm",
         ":sample_utils",
         ":smart_buildings_dataset",
     ],
