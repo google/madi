@@ -66,7 +66,7 @@ class OneClassSvmTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.98)
+    self.assertGreater(auc, 0.90)
 
 
 if __name__ == '__main__':

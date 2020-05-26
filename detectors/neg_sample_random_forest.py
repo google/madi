@@ -20,6 +20,7 @@ import pandas as pd
 import sklearn.ensemble
 
 _CLASS_LABEL = 'class_label'
+_NORMAL_CLASS = 1
 
 
 class NegativeSamplingRandomForestAd(sklearn.ensemble.RandomForestClassifier,
@@ -46,6 +47,7 @@ class NegativeSamplingRandomForestAd(sklearn.ensemble.RandomForestClassifier,
     Args:
       x_train: training sample, which does not need to be normalized.
     """
+    # TODO(sipple) Consolidate the normalization code into the base class.
     self._normalization_info = sample_utils.get_normalization_info(x_train)
     column_order = sample_utils.get_column_order(self._normalization_info)
     normalized_x_train = sample_utils.normalize(x_train[column_order],
@@ -57,7 +59,7 @@ class NegativeSamplingRandomForestAd(sklearn.ensemble.RandomForestClassifier,
         sample_delta=self._sample_delta)
 
     super(NegativeSamplingRandomForestAd, self).fit(
-        X=normalized_training_sample.drop(columns=[_CLASS_LABEL]),
+        X=normalized_training_sample[column_order],
         y=normalized_training_sample[_CLASS_LABEL])
 
   def predict(self, sample_df: pd.DataFrame) -> pd.DataFrame:
@@ -77,5 +79,5 @@ class NegativeSamplingRandomForestAd(sklearn.ensemble.RandomForestClassifier,
     x = np.float32(np.matrix(sample_df_normalized[column_order]))
 
     preds = super(NegativeSamplingRandomForestAd, self).predict_proba(x)
-    sample_df['class_prob'] = preds[:, 1]
+    sample_df['class_prob'] = preds[:, _NORMAL_CLASS]
     return sample_df
