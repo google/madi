@@ -39,6 +39,21 @@ class SampleUtilsTest(absltest.TestCase):
     self.assertAlmostEqual(np.std(df['x003']), 1.0, 1)
     self.assertEqual(df['class_label'].all(), 1)
 
+  def test_normalize_with_validity_indicator(self):
+
+    n_points = 10000
+    df_in = sample_utils.get_pos_sample_synthetic(
+        mean=[0, 1, 2], cov=np.eye(3), n_points=n_points)
+    df_in['x003_validity'] = np.concatenate(
+        (np.ones(n_points - 100), np.zeros(100)), axis=0)
+    normalization_info = sample_utils.get_normalization_info(
+        df_in.drop(columns=['class_label']))
+
+    df_normalized = sample_utils.normalize(df_in, normalization_info)
+    self.assertCountEqual(normalization_info.keys(),
+                          ['x001', 'x002', 'x003', 'x003_validity'])
+    assert_series_equal(df_in['x003_validity'], df_normalized['x003_validity'])
+
   def test_get_column_order(self):
     n_points = 10000
     df_in = sample_utils.get_pos_sample_synthetic(

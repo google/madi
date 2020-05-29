@@ -33,6 +33,10 @@ class Variable(object):
 def get_normalization_info(df: pd.DataFrame) -> Dict[str, Variable]:
   """Computes means, standard deviation to normalize a data frame.
 
+  Any variable xxxx_validity is considered a boolean validity indicator
+  for variable xxxx, and will not be normalized. A value of 1
+  indicates the value xxxx is valid, and 0 indicates xxx is invalid.
+
   Args:
     df: Pandas dataframe with numeric feature data.
 
@@ -44,11 +48,18 @@ def get_normalization_info(df: pd.DataFrame) -> Dict[str, Variable]:
     if not np.issubdtype(df[column].dtype, np.number):
       raise ValueError("The feature column %s is not numeric." % column)
 
+    if column.endswith("_validity"):
+      vmean = 0.0
+      vstd = 1.0
+    else:
+      vmean = df[column].mean()
+      vstd = df[column].std()
+
     variable = Variable(
         index=df.columns.get_loc(column),
         name=column,
-        mean=df[column].mean(),
-        std=df[column].std())
+        mean=vmean,
+        std=vstd)
     variables[column] = variable
   return variables
 
