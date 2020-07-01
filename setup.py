@@ -38,7 +38,7 @@ setuptools.setup(
         "numpy>=1.16.0",
         "tensorflow>=2.2.0"
         "scipy>=1.2.1",
-        "sklearn>=0.21.3",
+        "scikit-learn>=0.21.3",
         "pandas>=0.24.2",
     ],
     setup_requires=[
