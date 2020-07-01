@@ -19,8 +19,8 @@ import pandas as pd
 import tensorflow as tf
 
 
-_DATA_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599.csv"
-_README_FILE = "third_party/py/madi/datasets/data/anomaly_detection_sample_1577622599_README.md"
+_DATA_FILE = "datasets/data/anomaly_detection_sample_1577622599.csv"
+_README_FILE = "datasets/data/anomaly_detection_sample_1577622599_README.md"
 
 
 class SmartBuildingsDataset(BaseDataset):

@@ -49,8 +49,8 @@ _COL_NAMES_ALL = [
     'Soil_Type37', 'Soil_Type38', 'Soil_Type39', 'Soil_Type40', 'Cover_Type'
 ]
 
-_README_FILE = 'third_party/py/madi/datasets/data/forestcover_README.md'
-_CHECKSUM_DIR = 'google3/third_party/py/madi/datasets/checksum'
+_README_FILE = 'datasets/data/forestcover_README.md'
+_CHECKSUM_DIR = 'google3/datasets/checksum'
 
 
 class ForestCoverDataset(BaseDataset):
