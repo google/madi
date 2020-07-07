@@ -13,22 +13,29 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 """Provides access to the Smart Buidlings dataset for Anomaly Detection."""
+import os
+import typing
+
 from madi.datasets.base_dataset import BaseDataset
+from madi.utils import file_utils
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
+_RESOURCE_LOCATION = "madi.datasets.data"
+_DATA_FILE = file_utils.PackageResource(
+    _RESOURCE_LOCATION, "anomaly_detection_sample_1577622599.csv")
+_README_FILE = file_utils.PackageResource(
+    _RESOURCE_LOCATION, "anomaly_detection_sample_1577622599_README.md")
 
-_DATA_FILE = "madi/datasets/data/anomaly_detection_sample_1577622599.csv"
-_README_FILE = "madi/datasets/data/anomaly_detection_sample_1577622599_README.md"
+_FileType = typing.Union[str, os.PathLike, file_utils.PackageResource]
 
 
 class SmartBuildingsDataset(BaseDataset):
   """Smart Buildings data set for Multivariate Anomaly Detection."""
 
   def __init__(self,
-               datafilepath: str = _DATA_FILE,
-               readmefilepath: str = _README_FILE):
+               datafilepath: _FileType = _DATA_FILE,
+               readmefilepath: _FileType = _README_FILE):
     self._sample = self._load_data_file(datafilepath)
     self._description = self._load_readme(readmefilepath)
 
@@ -44,12 +51,8 @@ class SmartBuildingsDataset(BaseDataset):
   def description(self) -> str:
     return self._description
 
-  def _load_data_file(self, datafile: str) -> pd.DataFrame:
-    sample = None
-    if not tf.io.gfile.exists(datafile):
-      raise AssertionError("{} does not exist".format(datafile))
-    with tf.io.gfile.GFile(datafile) as csv_file:
+  def _load_data_file(self, datafile: _FileType) -> pd.DataFrame:
+    with file_utils.open_text_resource(datafile) as csv_file:
       sample = pd.read_csv(csv_file, header="infer", index_col=0)
 
-    sample = sample.reindex(np.random.permutation(sample.index))
-    return sample
+    return sample.reindex(np.random.permutation(sample.index))

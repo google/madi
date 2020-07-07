@@ -196,9 +196,9 @@ pytype_strict_library(
     srcs = ["datasets/base_dataset.py"],
     srcs_version = "PY3",
     deps = [
+        ":file_utils",
         "//third_party/py/pandas",
         "//third_party/py/six",
-        "//third_party/py/tensorflow",
     ],
 )
 
@@ -228,18 +228,26 @@ py_strict_test(
 pytype_strict_library(
     name = "smart_buildings_dataset",
     srcs = ["datasets/smart_buildings_dataset.py"],
-    data = [
-        "datasets/data/anomaly_detection_sample_1577622599.csv",
-        "datasets/data/anomaly_detection_sample_1577622599_README.md",
-    ],
     srcs_version = "PY3",
     deps = [
         ":base_dataset",
+        ":datasets_data",
+        ":file_utils",
         "//third_party/py/absl/logging",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
         "//third_party/py/tensorflow",
     ],
+)
+
+pytype_strict_library(
+    name = "datasets_data",
+    srcs = ["datasets/data/__init__.py"],
+    data = [
+        "datasets/data/anomaly_detection_sample_1577622599.csv",
+        "datasets/data/anomaly_detection_sample_1577622599_README.md",
+    ],
+    srcs_version = "PY3",
 )
 
 py_strict_test(
@@ -338,12 +346,49 @@ py_strict_test(
 )
 
 pytype_strict_library(
+    name = "file_utils",
+    srcs = ["utils/file_utils.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//third_party/py/attr",
+        "//third_party/py/importlib_resources",
+        "//third_party/py/tensorflow",
+        "//third_party/py/typing_extensions",
+    ],
+)
+
+py_strict_test(
+    name = "file_utils_test",
+    srcs = ["utils/file_utils_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        ":file_utils",
+        ":utils_test_data",
+        "//third_party/py/absl/testing:absltest",
+    ],
+)
+
+# This is a Python library because importlib_resources requires an __init__.py
+# to exist in directories which supply package data.
+pytype_strict_library(
+    name = "utils_test_data",
+    testonly = True,
+    srcs = ["utils/test_data/__init__.py"],
+    data = [
+        "utils/test_data/text_file.txt",
+    ],
+    srcs_version = "PY3",
+)
+
+pytype_strict_library(
     name = "madi",
     srcs = ["__init__.py"],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":evaluation_utils",
+        ":file_utils",
         ":forestcover_dataset",
         ":gaussian_mixture_dataset",
         ":integrated_gradients_interpreter",

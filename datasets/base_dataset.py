@@ -15,10 +15,12 @@
 """Base class for anomaly detection datasets."""
 
 import abc
+import os
+import typing
 
+from madi.utils import file_utils
 import pandas as pd
 import six
-import tensorflow as tf
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -43,11 +45,9 @@ class BaseDataset(object):
     """Informative text summary of the dataset."""
     pass
 
-  def _load_readme(self, readmefile: str) -> str:
-    desc = ""
-    if not tf.io.gfile.exists(readmefile):
-      raise AssertionError("{} does not exist".format(readmefile))
-    with tf.io.gfile.GFile(readmefile) as text_file:
-      lines = text_file.readlines()
-      desc = " ".join(lines)
-    return desc
+  def _load_readme(
+      self, readmefile: typing.Union[str, os.PathLike,
+                                     file_utils.PackageResource]
+  ) -> str:
+    with file_utils.open_text_resource(readmefile) as text_file:
+      return " ".join(text_file)
