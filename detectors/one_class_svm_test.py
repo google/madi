@@ -56,7 +56,7 @@ class OneClassSvmTest(absltest.TestCase):
         cache_size=200,
         verbose=False,
         max_iter=-1,
-        random_state=None)
+    )
 
     ad.train_model(x_train=training_sample.drop(columns=['class_label']))
 
