@@ -32,7 +32,6 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         "//third_party/py/pandas",
-        "//third_party/py/six",
     ],
 )
 
@@ -42,7 +41,6 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         "//third_party/py/pandas",
-        "//third_party/py/six",
     ],
 )
 
@@ -198,7 +196,6 @@ pytype_strict_library(
     deps = [
         ":file_utils",
         "//third_party/py/pandas",
-        "//third_party/py/six",
     ],
 )
 

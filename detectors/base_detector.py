@@ -17,11 +17,9 @@
 import abc
 
 import pandas as pd
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseAnomalyDetectionAlgorithm(object):
+class BaseAnomalyDetectionAlgorithm(metaclass=abc.ABCMeta):
   """All AD algorithms will include a train and predict step."""
 
   @abc.abstractmethod

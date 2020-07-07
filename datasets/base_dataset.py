@@ -20,11 +20,9 @@ import typing
 
 from madi.utils import file_utils
 import pandas as pd
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseDataset(object):
+class BaseDataset(metaclass=abc.ABCMeta):
   """All AD algorithms will include a train and predict step."""
 
   @property

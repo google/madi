@@ -18,11 +18,9 @@ import abc
 from typing import Tuple, Dict, Optional
 
 import pandas as pd
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseAnomalyInterpreter(object):
+class BaseAnomalyInterpreter(metaclass=abc.ABCMeta):
   """Defines methods for interpreting anomalies."""
 
   @abc.abstractmethod
