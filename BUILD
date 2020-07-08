@@ -57,16 +57,15 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "isolation_forest_detector_test",
-    srcs = ["tests/isolation_forest_detector_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/isolation_forest_detector_test.py"],
     deps = [
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":isolation_forest_detector",
-        "//third_party/py/absl/testing:absltest",
     ],
 )
 
@@ -83,16 +82,15 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "one_class_svm_test",
-    srcs = ["tests/one_class_svm_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/one_class_svm_test.py"],
     deps = [
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":one_class_svm",
-        "//third_party/py/absl/testing:absltest",
     ],
 )
 
@@ -109,16 +107,15 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "neg_sample_random_forest_test",
-    srcs = ["tests/neg_sample_random_forest_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/neg_sample_random_forest_test.py"],
     deps = [
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":neg_sample_random_forest",
-        "//third_party/py/absl/testing:absltest",
     ],
 )
 
@@ -137,17 +134,16 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "neg_sample_neural_net_detector_test",
-    srcs = ["tests/neg_sample_neural_net_detector_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/neg_sample_neural_net_detector_test.py"],
     deps = [
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":neg_sample_neural_net_detector",
         "//third_party/py/absl/logging",
-        "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
     ],
 )
@@ -167,9 +163,8 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "integrated_gradients_interpreter_test",
-    srcs = ["tests/integrated_gradients_interpreter_test.py"],
     data = [
         "tests/test_data/model-multivariate-ad/saved_model.pb",
         "tests/test_data/model-multivariate-ad/variables/variables.data-00000-of-00001",
@@ -178,11 +173,11 @@ py_strict_test(
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/integrated_gradients_interpreter_test.py"],
     deps = [
         ":integrated_gradients_interpreter",
         ":sample_utils",
         "//third_party/py/absl/logging",
-        "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
         "//third_party/py/tensorflow",
@@ -244,19 +239,19 @@ pytype_strict_library(
     data = [
         "datasets/data/anomaly_detection_sample_1577622599.csv",
         "datasets/data/anomaly_detection_sample_1577622599_README.md",
+        "datasets/data/forestcover_README.md",
     ],
     srcs_version = "PY3",
 )
 
-py_strict_test(
+pytest_test(
     name = "smart_buildings_dataset_test",
-    srcs = ["tests/smart_buildings_dataset_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/smart_buildings_dataset_test.py"],
     deps = [
         ":smart_buildings_dataset",
         "//third_party/py/absl/logging",
-        "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
     ],
@@ -267,11 +262,12 @@ pytype_strict_library(
     srcs = ["datasets/forestcover_dataset.py"],
     data = [
         "datasets/checksum/forest_cover.txt",
-        "datasets/data/forestcover_README.md",
     ],
     srcs_version = "PY3",
     deps = [
         ":base_dataset",
+        ":datasets_data",
+        ":file_utils",
         "//third_party/py/absl/logging",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
@@ -280,18 +276,18 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "forestcover_dataset_test",
-    srcs = ["tests/forestcover_dataset_test.py"],
     data = [
         "tests/test_data/covtype.test.data",
     ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/forestcover_dataset_test.py"],
     deps = [
         ":forestcover_dataset",
         "//third_party/py/absl/logging",
-        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/importlib_resources",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
         "//third_party/py/tensorflow",
@@ -311,14 +307,13 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "sample_utils_test",
-    srcs = ["tests/sample_utils_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/sample_utils_test.py"],
     deps = [
         ":sample_utils",
-        "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
         "//third_party/py/pandas",
     ],
@@ -331,14 +326,13 @@ pytype_strict_library(
     deps = ["//third_party/py/sklearn"],
 )
 
-py_strict_test(
+pytest_test(
     name = "evaluation_utils_test",
-    srcs = ["tests/evaluation_utils_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = ["tests/evaluation_utils_test.py"],
     deps = [
         ":evaluation_utils",
-        "//third_party/py/absl/testing:absltest",
         "//third_party/py/numpy",
     ],
 )

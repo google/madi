@@ -17,6 +17,7 @@ import os
 
 from absl import logging
 from madi.datasets.base_dataset import BaseDataset
+from madi.utils import file_utils
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -49,7 +50,8 @@ _COL_NAMES_ALL = [
     'Soil_Type37', 'Soil_Type38', 'Soil_Type39', 'Soil_Type40', 'Cover_Type'
 ]
 
-_README_FILE = 'madi/datasets/data/forestcover_README.md'
+_README_FILE = file_utils.PackageResource('madi.datasets.data',
+                                          'forestcover_README.md')
 _CHECKSUM_DIR = 'google3/madi/datasets/checksum'
 
 

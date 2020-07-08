@@ -12,19 +12,19 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.integrated_gradients_interpreter."""
+"""Tests for madi.detectors.integrated_gradients_interpreter."""
 
 import os
 
-from absl.testing import absltest
 import madi.detectors.integrated_gradients_interpreter
 import madi.utils.sample_utils as sample_utils
 import numpy as np
 import numpy.testing
 import pandas as pd
+import pytest
 import tensorflow as tf
 
-_TEST_DATA = os.path.join(os.path.split(__file__)[0], 'test_data')
+_TEST_DATA = os.path.join(os.path.dirname(__file__), 'test_data')
 _POSITIVE_SAMPLE_FILE = 'positive_sample.csv'
 _MODEL_FILENAME = 'model-multivariate-ad'
 
@@ -64,7 +64,7 @@ _FIELDS = [
 ]
 
 
-class IntegratedGradientsInterpreterTest(absltest.TestCase):
+class TestIntegratedGradientsInterpreter:
 
   def test_blame(self):
     interpreter = self._get_test_interpreter(0.95, 250)
@@ -111,10 +111,10 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
         'x016': 1.0148944337105463
     }
     for col_name in expected_attribution_dict:
-      self.assertAlmostEqual(actual_attribution_dict[col_name],
-                             expected_attribution_dict[col_name], 5)
-      self.assertAlmostEqual(actual_reference_point_dict[col_name],
-                             expected_reference_point_dict[col_name], 5)
+      assert actual_attribution_dict[col_name] == pytest.approx(
+          expected_attribution_dict[col_name], abs=1e-5)
+      assert actual_reference_point_dict[col_name] == pytest.approx(
+          expected_reference_point_dict[col_name], abs=1e-5)
 
   def test_explain_1d(self):
 
@@ -214,24 +214,24 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
         index_col=0)
     nearest_ix, nearest_dist = madi.detectors.integrated_gradients_interpreter.find_nearest_euclidean(
         df_baseline, np.array(_TEST_ARRAY_4))
-    self.assertAlmostEqual(nearest_dist, 0.0, 5)
-    self.assertEqual(nearest_ix, 4477)
+    assert nearest_dist == pytest.approx(0.0, abs=1e-5)
+    assert nearest_ix == 4477
 
     # Test with a small perturbation:
     nearest_ix, nearest_dist = madi.detectors.integrated_gradients_interpreter.find_nearest_euclidean(
         df_baseline,
         np.array(_TEST_ARRAY_4) + (0.01 * np.ones(16)))
-    self.assertAlmostEqual(nearest_dist, 0.04, 5)
-    self.assertEqual(nearest_ix, 4477)
+    assert nearest_dist == pytest.approx(0.04, abs=1e-5)
+    assert nearest_ix == 4477
 
   def test_select_invalid_baseline(self):
 
-    with self.assertRaises(madi.detectors.integrated_gradients_interpreter
-                           .NoQualifyingBaselineError) as cm:
+    with pytest.raises(madi.detectors.integrated_gradients_interpreter
+                       .NoQualifyingBaselineError) as cm:
       _ = self._get_test_interpreter(0.99, 1000)
-    ex = cm.exception
-    self.assertEqual(ex.min_class_confidence, 0.99)
-    self.assertAlmostEqual(ex.highest_class_confidence, 0.97, places=2)
+    ex = cm.value
+    assert ex.min_class_confidence == 0.99
+    assert ex.highest_class_confidence == pytest.approx(0.97, abs=1e-2)
 
   def test_select_baseline(self):
     min_p = 0.95
@@ -257,8 +257,8 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
         2305, 1197, 2371, 335, 1225, 1892, 2926, 1417, 411, 2383, 806, 1441,
         375, 152, 2183, 3136, 510, 1459, 3108, 1242, 1049, 1389, 342
     ]
-    self.assertListEqual(df_baseline_actual.index.tolist(), expected_indices)
-    self.assertGreaterEqual(max_cnf, min_p)
+    assert df_baseline_actual.index.tolist() == expected_indices
+    assert max_cnf >= min_p
 
   def test_completeness_axiom_on_large_perturbation(self):
     """Tests the Completeness Axiom from Sundararajan, Tuly, and Yan 2017.
@@ -287,16 +287,16 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
     df_nearest_reference_point = nearest_reference_point.to_frame().T
     x = np.float32(np.matrix(df_nearest_reference_point))
     reference_point_score = interpreter._model.predict(x, verbose=1, steps=1)[0]
-    self.assertAlmostEqual(reference_point_score, 0.966, delta=0.001)
+    assert reference_point_score == pytest.approx(0.966, abs=1e-3)
 
     # Get the model's score for the anomaly. Should be very small.
     anomaly_score = interpreter._model.predict(
         np.matrix(anomalous_data), verbose=1, steps=1)[0]
 
-    self.assertAlmostEqual(anomaly_score, 0.00, delta=0.001)
+    assert anomaly_score == pytest.approx(0.0, abs=1e-3)
 
     # Verify that the gradient matrix contains exactly num_steps.
-    self.assertLen(df_grad, num_steps)
+    assert len(df_grad) == num_steps
 
     # Compute the difference between reference point and the anomaly.
     delta = np.array(nearest_reference_point - test_anomaly)
@@ -309,7 +309,7 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
                   delta).sum()
 
     # Assert the completeness axiom.
-    self.assertAlmostEqual(score_diff, cumulative, delta=0.001)
+    assert score_diff == pytest.approx(cumulative, abs=1e-3)
 
   def test_completeness_axiom_on_small_perturbation(self):
     """Tests the Completeness Axiom from Sundararajan, Tuly, and Yan 2017.
@@ -338,16 +338,16 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
     df_nearest_reference_point = nearest_reference_point.to_frame().T
     x = np.float32(np.matrix(df_nearest_reference_point))
     reference_point_score = interpreter._model.predict(x, verbose=1, steps=1)[0]
-    self.assertAlmostEqual(reference_point_score, 0.967, delta=0.001)
+    assert reference_point_score == pytest.approx(0.967, abs=0.001)
 
     # Get the model's score for the anomaly. Should be very small.
     anomaly_score = interpreter._model.predict(
         np.matrix(anomalous_data), verbose=1, steps=1)[0]
 
-    self.assertAlmostEqual(anomaly_score, 0.169, delta=0.001)
+    assert anomaly_score == pytest.approx(0.169, abs=0.001)
 
     # Verify that the gradient matrix contains exactly num_steps.
-    self.assertLen(df_grad, num_steps)
+    assert len(df_grad) == num_steps
 
     # Compute the difference between reference point and the anomaly.
     delta = np.array(nearest_reference_point - test_anomaly)
@@ -360,7 +360,7 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
                   delta).sum()
 
     # Assert the completeness axiom.
-    self.assertAlmostEqual(score_diff, cumulative, delta=0.001)
+    assert score_diff == pytest.approx(cumulative, abs=0.001)
 
   def _get_test_interpreter(self,
                             min_class_confidence,
@@ -381,7 +381,3 @@ class IntegratedGradientsInterpreterTest(absltest.TestCase):
         model, df_pos_normalized, min_class_confidence, max_baseline_size,
         num_steps_integrated_gradients)
     return interpreter
-
-
-if __name__ == '__main__':
-  absltest.main()

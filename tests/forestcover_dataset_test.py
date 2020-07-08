@@ -17,12 +17,11 @@
 import os
 
 from absl import logging
-from absl.testing import absltest
 from madi.datasets import forestcover_dataset
 import tensorflow as tf
 
 _DATA_FILE_IN = os.path.join(
-    os.path.split(__file__)[0], 'test_data/covtype.test.data')
+    os.path.dirname(__file__), 'test_data/covtype.test.data')
 _DATA_FILE_TEST = 'covtype.data'
 _COL_NAMES_SELECT = [
     'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',
@@ -32,20 +31,17 @@ _COL_NAMES_SELECT = [
 ]
 
 
-class ForestCoverDatasetTest(absltest.TestCase):
+class TestForestCoverDataset:
 
-  def test_forsetcover_dataset(self):
-    datadir = self.create_tempdir()
-    datafile_in = os.path.join(os.path.dirname(__file__), _DATA_FILE_IN)
+  def test_forsetcover_dataset(self, tmpdir):
+    datadir = tmpdir
     datafile_test = os.path.join(datadir, _DATA_FILE_TEST)
-    logging.info(datafile_in)
+    logging.info(_DATA_FILE_IN)
 
-    tf.io.gfile.copy(datafile_in, datafile_test, overwrite=True)
+    tf.io.gfile.copy(_DATA_FILE_IN, datafile_test, overwrite=True)
 
     ds = forestcover_dataset.ForestCoverDataset(datadir)
-    self.assertCountEqual(ds.sample.columns, _COL_NAMES_SELECT)
-    self.assertLen(ds.sample, 139)
 
-
-if __name__ == '__main__':
-  absltest.main()
+    assert len(ds.sample) == 139
+    assert sorted(ds.sample.columns) == sorted(_COL_NAMES_SELECT)
+    assert set(ds.sample.columns) == set(_COL_NAMES_SELECT)

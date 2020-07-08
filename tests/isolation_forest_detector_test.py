@@ -12,15 +12,14 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.isolation_forest_detector."""
+"""Tests for madi.detectors.isolation_forest_detector."""
 
-from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
 from madi.detectors.isolation_forest_detector import IsolationForestAd
 import madi.utils.evaluation_utils as evaluation_utils
 
 
-class IsolationForestDetectorTest(absltest.TestCase):
+class TestIsolationForestDetector:
 
   def test_isolation_forest(self):
     """Creates a 1-mode, 4-d test sample, and performs anomaly detection."""
@@ -47,8 +46,4 @@ class IsolationForestDetectorTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.85)
-
-
-if __name__ == '__main__':
-  absltest.main()
+    assert auc > 0.85

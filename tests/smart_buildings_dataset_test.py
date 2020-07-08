@@ -12,55 +12,58 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.datasets.smart_buildings_dataset."""
+"""Tests for madi.datasets.smart_buildings_dataset."""
 
-from absl.testing import absltest
 from madi.datasets import smart_buildings_dataset
 import pandas as pd
 from pandas.util.testing import assert_series_equal
+import pytest
 
 
-class SmartBuildingsDatasetTest(absltest.TestCase):
+class TestSmartBuildingsDataset:
 
   def test_smart_buildings_dataset(self):
     pd.set_option('display.max_rows', None, 'display.max_columns', None)
     ds = smart_buildings_dataset.SmartBuildingsDataset()
-    self.assertLen(ds.sample, 60425)
-    self.assertAlmostEqual(
-        ds.sample['data:zone_air_heating_temperature_setpoint'].mean(),
-        290.627693, 4)
-    self.assertAlmostEqual(
-        ds.sample['data:zone_air_heating_temperature_setpoint'].std(), 3.703542,
-        4)
+    assert len(ds.sample) == 60425
+    assert ds.sample['data:zone_air_heating_temperature_setpoint'].mean(
+    ) == pytest.approx(
+        290.627693, abs=1e-4)
+    assert ds.sample['data:zone_air_heating_temperature_setpoint'].std(
+    ) == pytest.approx(
+        3.703542, abs=1e-4)
 
-    self.assertAlmostEqual(ds.sample['data:zone_air_temperature_sensor'].mean(),
-                           295.475594, 4)
-    self.assertAlmostEqual(ds.sample['data:zone_air_temperature_sensor'].std(),
-                           0.971860, 4)
+    assert ds.sample['data:zone_air_temperature_sensor'].mean(
+    ) == pytest.approx(
+        295.475594, abs=1e-4)
+    assert ds.sample['data:zone_air_temperature_sensor'].std() == pytest.approx(
+        0.971860, abs=1e-4)
 
-    self.assertAlmostEqual(
-        ds.sample['data:zone_air_cooling_temperature_setpoint'].mean(),
-        299.942589, 4)
-    self.assertAlmostEqual(
-        ds.sample['data:zone_air_cooling_temperature_setpoint'].std(), 2.773154,
-        4)
+    assert ds.sample['data:zone_air_cooling_temperature_setpoint'].mean(
+    ) == pytest.approx(
+        299.942589, abs=1e-4)
+    assert ds.sample['data:zone_air_cooling_temperature_setpoint'].std(
+    ) == pytest.approx(
+        2.773154, abs=1e-4)
 
-    self.assertAlmostEqual(ds.sample['data:supply_air_flowrate_sensor'].mean(),
-                           0.077608, 4)
-    self.assertAlmostEqual(ds.sample['data:supply_air_flowrate_sensor'].std(),
-                           0.100314, 4)
+    assert ds.sample['data:supply_air_flowrate_sensor'].mean() == pytest.approx(
+        0.077608, abs=1e-4)
+    assert ds.sample['data:supply_air_flowrate_sensor'].std() == pytest.approx(
+        0.100314, abs=1e-4)
 
-    self.assertAlmostEqual(
-        ds.sample['data:supply_air_damper_percentage_command'].mean(),
-        45.299588, 4)
-    self.assertAlmostEqual(
-        ds.sample['data:supply_air_damper_percentage_command'].std(), 39.005507,
-        4)
+    assert ds.sample['data:supply_air_damper_percentage_command'].mean(
+    ) == pytest.approx(
+        45.299588, abs=1e-4)
+    assert ds.sample['data:supply_air_damper_percentage_command'].std(
+    ) == pytest.approx(
+        39.005507, abs=1e-4)
 
-    self.assertAlmostEqual(
-        ds.sample['data:supply_air_flowrate_setpoint'].mean(), 0.079952, 4)
-    self.assertAlmostEqual(ds.sample['data:supply_air_flowrate_setpoint'].std(),
-                           0.089611, 4)
+    assert ds.sample['data:supply_air_flowrate_setpoint'].mean(
+    ) == pytest.approx(
+        0.079952, abs=1e-4)
+    assert ds.sample['data:supply_air_flowrate_setpoint'].std(
+    ) == pytest.approx(
+        0.089611, abs=1e-4)
 
     assert_series_equal(
         ds.sample['class_label'].value_counts(),
@@ -68,7 +71,4 @@ class SmartBuildingsDatasetTest(absltest.TestCase):
 
   def test_readme(self):
     ds = smart_buildings_dataset.SmartBuildingsDataset()
-    self.assertLen(ds.description, 1627)
-
-if __name__ == '__main__':
-  absltest.main()
+    assert len(ds.description) == 1627

@@ -12,14 +12,13 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.datasets.gaussian_dataset."""
+"""Tests for madi.datasets.gaussian_dataset."""
 
-from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
 import numpy as np
 
 
-class GaussianMixtureDatasetTest(absltest.TestCase):
+class TestGaussianMixtureDataset:
 
   def test_gaussian_dataset(self):
     n_dim = 4
@@ -43,19 +42,19 @@ class GaussianMixtureDatasetTest(absltest.TestCase):
       hist, _ = np.histogram(
           pos_sample[col], density=True, bins=12, range=(-4, 4))
       # Before mode 1:
-      self.assertLessEqual(hist[0], 0.08)
+      assert hist[0] <= 0.08
       # First mode
-      self.assertGreaterEqual(hist[2], 0.19)
+      assert hist[2] >= 0.19
       # Trough between modes 1 and 2
-      self.assertLess(hist[4], 0.1)
+      assert hist[4] < 0.1
       # Second mode
-      self.assertGreaterEqual(min(hist[[5, 6]]), 0.16)
+      assert min(hist[[5, 6]]) >= 0.16
       # Trough between modes 2 and 3.
-      self.assertLess(hist[7], 0.1)
+      assert hist[7] < 0.1
       # Third mode
-      self.assertGreaterEqual(hist[9], 0.19)
+      assert hist[9] >= 0.19
       # After mode 3
-      self.assertLess(hist[11], 0.08)
+      assert hist[11] < 0.08
 
     neg_sample = ds.sample[ds.sample['class_label'] == 0]
     for col in ['x001', 'x002', 'x003', 'x004']:
@@ -63,9 +62,5 @@ class GaussianMixtureDatasetTest(absltest.TestCase):
       hist, _ = np.histogram(
           neg_sample[col], density=True, bins=10, range=(-4, 4))
 
-      self.assertLess(max(hist), 0.21)
-      self.assertGreater(min(hist), 0.1)
-
-
-if __name__ == '__main__':
-  absltest.main()
+      assert max(hist) < 0.21
+      assert min(hist) > 0.1

@@ -12,17 +12,17 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.neg_sample_neural_net_detector."""
+"""Tests for madi.detectors.neg_sample_neural_net_detector."""
+import os
 
-from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
 from madi.detectors.neg_sample_neural_net_detector import NegativeSamplingNeuralNetworkAD
 import madi.utils.evaluation_utils as evaluation_utils
 
 
-class NegSampleNeuralNetDetectorTest(absltest.TestCase):
+class TestNegSampleNeuralNetDetector:
 
-  def test_gaussian_mixture(self):
+  def test_gaussian_mixture(self, tmpdir):
     """Tests NS-NN on single-mode Gaussian."""
 
     sample_ratio = 0.05
@@ -34,7 +34,7 @@ class NegSampleNeuralNetDetectorTest(absltest.TestCase):
         upper_bound=3,
         lower_bound=-3)
 
-    log_dir = self.create_tempdir()
+    log_dir = tmpdir
     split_ix = int(len(ds.sample) * 0.8)
     training_sample = ds.sample.iloc[:split_ix]
     test_sample = ds.sample.iloc[split_ix:]
@@ -58,12 +58,12 @@ class NegSampleNeuralNetDetectorTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.98)
+    assert auc > 0.98
 
-  def test_gaussian_mixture_io(self):
+  def test_gaussian_mixture_io(self, tmpdir):
     """Tests NS-NN on single-mode Gaussian."""
 
-    model_dir = self.create_tempdir()
+    model_dir = os.path.join(tmpdir, 'models')
     sample_ratio = 0.05
     ds = gaussian_mixture_dataset.GaussianMixtureDataset(
         n_dim=4,
@@ -73,7 +73,7 @@ class NegSampleNeuralNetDetectorTest(absltest.TestCase):
         upper_bound=3,
         lower_bound=-3)
 
-    log_dir = self.create_tempdir()
+    log_dir = os.path.join(tmpdir, 'logs')
     split_ix = int(len(ds.sample) * 0.8)
     training_sample = ds.sample.iloc[:split_ix]
     test_sample = ds.sample.iloc[split_ix:]
@@ -116,8 +116,4 @@ class NegSampleNeuralNetDetectorTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.98)
-
-
-if __name__ == '__main__':
-  absltest.main()
+    assert auc > 0.98

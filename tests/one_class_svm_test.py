@@ -12,16 +12,15 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.one_class_svm."""
+"""Tests for madi.detectors.one_class_svm."""
 
 
-from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
 from madi.detectors.one_class_svm import OneClassSVMAd
 import madi.utils.evaluation_utils as evaluation_utils
 
 
-class OneClassSvmTest(absltest.TestCase):
+class TestOneClassSvm:
 
   def test_gaussian_mixture(self):
     """Tests OC-SVM on single-mode Gaussian."""
@@ -66,8 +65,4 @@ class OneClassSvmTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.90)
-
-
-if __name__ == '__main__':
-  absltest.main()
+    assert auc > 0.90

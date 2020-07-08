@@ -12,27 +12,22 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.utils.evaluation_utils."""
+"""Tests for madi.utils.evaluation_utils."""
 
 
-from absl.testing import absltest
 from madi.utils import evaluation_utils
 
 
-class EvaluationUtilsTest(absltest.TestCase):
+class TestEvaluationUtils:
 
   def test_compute_auc_max(self):
 
     y_actual = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0]
     auc = evaluation_utils.compute_auc(y_actual, y_actual)
-    self.assertEqual(auc, 1.0)
+    assert auc == 1.0
 
   def test_compute_auc_min(self):
     y_actual = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0]
     y_predicted = [float(not bool(y)) for y in y_actual]
     auc = evaluation_utils.compute_auc(y_actual, y_predicted)
-    self.assertEqual(auc, 0.0)
-
-
-if __name__ == '__main__':
-  absltest.main()
+    assert auc == 0.0

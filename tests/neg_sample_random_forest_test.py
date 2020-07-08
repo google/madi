@@ -12,15 +12,14 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-"""Tests for google3.third_party.py.madi.detectors.neg_sample_random_forest."""
+"""Tests for madi.detectors.neg_sample_random_forest."""
 
-from absl.testing import absltest
 from madi.datasets import gaussian_mixture_dataset
 from madi.detectors.neg_sample_random_forest import NegativeSamplingRandomForestAd
 import madi.utils.evaluation_utils as evaluation_utils
 
 
-class NegSampleRandomForestTest(absltest.TestCase):
+class TestNegSampleRandomForest:
 
   def test_gaussian_mixture(self):
     """Tests NS-NN on single-mode Gaussian."""
@@ -77,8 +76,4 @@ class NegSampleRandomForestTest(absltest.TestCase):
     auc = evaluation_utils.compute_auc(
         y_actual=y_actual, y_predicted=xy_predicted['class_prob'])
 
-    self.assertGreater(auc, 0.98)
-
-
-if __name__ == '__main__':
-  absltest.main()
+    assert auc > 0.98
