@@ -14,6 +14,7 @@
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
 load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 load("//research/colab:build_defs.bzl", "colab_binary")
+load("//third_party/py/pytest:pytest_defs.bzl", "pytest_test")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -58,7 +59,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "isolation_forest_detector_test",
-    srcs = ["detectors/isolation_forest_detector_test.py"],
+    srcs = ["tests/isolation_forest_detector_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -84,7 +85,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "one_class_svm_test",
-    srcs = ["detectors/one_class_svm_test.py"],
+    srcs = ["tests/one_class_svm_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -110,7 +111,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "neg_sample_random_forest_test",
-    srcs = ["detectors/neg_sample_random_forest_test.py"],
+    srcs = ["tests/neg_sample_random_forest_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -138,7 +139,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "neg_sample_neural_net_detector_test",
-    srcs = ["detectors/neg_sample_neural_net_detector_test.py"],
+    srcs = ["tests/neg_sample_neural_net_detector_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -168,12 +169,12 @@ pytype_strict_library(
 
 py_strict_test(
     name = "integrated_gradients_interpreter_test",
-    srcs = ["detectors/integrated_gradients_interpreter_test.py"],
+    srcs = ["tests/integrated_gradients_interpreter_test.py"],
     data = [
-        "detectors/test_data/model-multivariate-ad/saved_model.pb",
-        "detectors/test_data/model-multivariate-ad/variables/variables.data-00000-of-00001",
-        "detectors/test_data/model-multivariate-ad/variables/variables.index",
-        "detectors/test_data/positive_sample.csv",
+        "tests/test_data/model-multivariate-ad/saved_model.pb",
+        "tests/test_data/model-multivariate-ad/variables/variables.data-00000-of-00001",
+        "tests/test_data/model-multivariate-ad/variables/variables.index",
+        "tests/test_data/positive_sample.csv",
     ],
     python_version = "PY3",
     srcs_version = "PY3",
@@ -212,7 +213,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "gaussian_mixture_dataset_test",
-    srcs = ["datasets/gaussian_mixture_dataset_test.py"],
+    srcs = ["tests/gaussian_mixture_dataset_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -249,7 +250,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "smart_buildings_dataset_test",
-    srcs = ["datasets/smart_buildings_dataset_test.py"],
+    srcs = ["tests/smart_buildings_dataset_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -281,9 +282,9 @@ pytype_strict_library(
 
 py_strict_test(
     name = "forestcover_dataset_test",
-    srcs = ["datasets/forestcover_dataset_test.py"],
+    srcs = ["tests/forestcover_dataset_test.py"],
     data = [
-        "datasets/data/covtype.test.data",
+        "tests/test_data/covtype.test.data",
     ],
     python_version = "PY3",
     srcs_version = "PY3",
@@ -312,7 +313,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "sample_utils_test",
-    srcs = ["utils/sample_utils_test.py"],
+    srcs = ["tests/sample_utils_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -332,7 +333,7 @@ pytype_strict_library(
 
 py_strict_test(
     name = "evaluation_utils_test",
-    srcs = ["utils/evaluation_utils_test.py"],
+    srcs = ["tests/evaluation_utils_test.py"],
     python_version = "PY3",
     srcs_version = "PY3",
     deps = [
@@ -354,26 +355,31 @@ pytype_strict_library(
     ],
 )
 
-py_strict_test(
+pytest_test(
     name = "file_utils_test",
-    srcs = ["utils/file_utils_test.py"],
+    data = [
+        "tests/test_data/text_file.txt",
+    ],
     python_version = "PY3",
     srcs_version = "PY3",
+    tests = [
+        "tests/file_utils_test.py",
+    ],
     deps = [
         ":file_utils",
-        ":utils_test_data",
-        "//third_party/py/absl/testing:absltest",
+        ":test_data_package",
     ],
 )
 
-# This is a Python library because importlib_resources requires an __init__.py
-# to exist in directories which supply package data.
+# This target should be included when using package resources because
+# importlib.resources requires that resources distributed as part of a package
+# have an `__init__.py` in the directory and parent directories.
 pytype_strict_library(
-    name = "utils_test_data",
+    name = "test_data_package",
     testonly = True,
-    srcs = ["utils/test_data/__init__.py"],
-    data = [
-        "utils/test_data/text_file.txt",
+    srcs = [
+        "tests/__init__.py",
+        "tests/test_data/__init__.py",
     ],
     srcs_version = "PY3",
 )

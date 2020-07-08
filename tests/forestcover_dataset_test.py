@@ -21,7 +21,8 @@ from absl.testing import absltest
 from madi.datasets import forestcover_dataset
 import tensorflow as tf
 
-_DATA_FILE_IN = 'data/covtype.test.data'
+_DATA_FILE_IN = os.path.join(
+    os.path.split(__file__)[0], 'test_data/covtype.test.data')
 _DATA_FILE_TEST = 'covtype.data'
 _COL_NAMES_SELECT = [
     'Elevation', 'Aspect', 'Slope', 'Horizontal_Distance_To_Hydrology',

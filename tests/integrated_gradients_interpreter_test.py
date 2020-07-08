@@ -24,7 +24,7 @@ import numpy.testing
 import pandas as pd
 import tensorflow as tf
 
-_TEST_DATA = 'test_data'
+_TEST_DATA = os.path.join(os.path.split(__file__)[0], 'test_data')
 _POSITIVE_SAMPLE_FILE = 'positive_sample.csv'
 _MODEL_FILENAME = 'model-multivariate-ad'
 

@@ -44,8 +44,8 @@ assert hasattr(importlib_resources, "open_text")
 @attr.s(auto_attribs=True, slots=True, frozen=True)
 class PackageResource:
   """Class for representing a resource distributed as part of a package."""
-  package: str
-  resource: str
+  package: importlib_resources.Package
+  resource: importlib_resources.Resource
 
 
 class TextIOContextManager(Protocol):
