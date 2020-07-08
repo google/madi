@@ -1,0 +1,23 @@
+# Source code
+recursive-include src *.py
+
+# Data
+recursive-include src *.csv *.data *.txt *.md
+
+# Tests
+include tox.ini
+recursive-include tests *.py
+
+# Documentation
+recursive-include docs *.png
+recursive-include docs *.svg
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs *.md
+include LICENSE *.md *.rst *.toml *.yml *.yaml *.ini *.py *.cfg
+
+prune .tox/
+prune dist/
+prune build/
+prune .venv/
+prune venv/
