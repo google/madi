@@ -1,6 +1,9 @@
 # Source code
 recursive-include src *.py
 
+# Notebooks
+recursive-include *.ipynb
+
 # Data
 recursive-include src *.csv *.data *.txt *.md
 
