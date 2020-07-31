@@ -7,17 +7,17 @@ description: "Multvariate Anomaly Detection with Interpretability (MADI)"
 third_party {
   url {
     type: PIPER
-    value: "http://google3/madi"
+    value: "http://google3/third_party/py/madi"
   }
 }
 
 presubmit: {
-  path_expression: "//depot/google3/madi/..."
+  path_expression: "//depot/google3/third_party/py/madi/..."
 
   check_description: {
     failure_message:
       "\n"
-      "CL descriptions for changes to madi\n"
+      "CL descriptions for changes to third_party/py/madi\n"
       "must contain one or more sections delimited as follows:\n"
       "\n"
       "BEGIN_PUBLIC\n"
@@ -38,7 +38,7 @@ presubmit: {
 }
 
 presubmit: {
-  path_expression: "//depot/google3/madi/..."
+  path_expression: "//depot/google3/third_party/py/madi/..."
 
   check_do_not_submit: {
     failure_status: ERROR
