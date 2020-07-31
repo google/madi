@@ -14,7 +14,7 @@
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
 load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 load("//research/colab:build_defs.bzl", "colab_binary")
-load("//pytest:pytest_defs.bzl", "pytest_test")
+load("//third_party/py/pytest:pytest_defs.bzl", "pytest_test")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -32,7 +32,7 @@ pytype_strict_library(
     srcs = ["detectors/base_detector.py"],
     srcs_version = "PY3",
     deps = [
-        "//pandas",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -41,7 +41,7 @@ pytype_strict_library(
     srcs = ["detectors/base_interpreter.py"],
     srcs_version = "PY3",
     deps = [
-        "//pandas",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -51,9 +51,9 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         ":base_detector",
-        "//numpy",
-        "//pandas",
-        "//sklearn",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/sklearn",
     ],
 )
 
@@ -76,9 +76,9 @@ pytype_strict_library(
     deps = [
         ":base_detector",
         ":sample_utils",
-        "//numpy",
-        "//pandas",
-        "//sklearn",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/sklearn",
     ],
 )
 
@@ -101,9 +101,9 @@ pytype_strict_library(
     deps = [
         ":base_detector",
         ":sample_utils",
-        "//numpy",
-        "//pandas",
-        "//sklearn",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/sklearn",
     ],
 )
 
@@ -127,10 +127,10 @@ pytype_strict_library(
         ":base_detector",
         ":base_interpreter",
         ":sample_utils",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -143,8 +143,8 @@ pytest_test(
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":neg_sample_neural_net_detector",
-        "//absl/logging",
-        "//numpy",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
     ],
 )
 
@@ -155,11 +155,11 @@ pytype_strict_library(
     deps = [
         ":base_interpreter",
         ":sample_utils",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
-        "//scipy",
-        "//tensorflow",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/scipy",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -177,10 +177,10 @@ pytest_test(
     deps = [
         ":integrated_gradients_interpreter",
         ":sample_utils",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -191,7 +191,7 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         ":file_utils",
-        "//pandas",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -201,8 +201,8 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         ":base_dataset",
-        "//numpy",
-        "//pandas",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -213,8 +213,8 @@ py_strict_test(
     srcs_version = "PY3",
     deps = [
         ":gaussian_mixture_dataset",
-        "//absl/testing:absltest",
-        "//numpy",
+        "//third_party/py/absl/testing:absltest",
+        "//third_party/py/numpy",
     ],
 )
 
@@ -226,10 +226,10 @@ pytype_strict_library(
         ":base_dataset",
         ":datasets_data",
         ":file_utils",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -251,9 +251,9 @@ pytest_test(
     tests = ["tests/smart_buildings_dataset_test.py"],
     deps = [
         ":smart_buildings_dataset",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -268,11 +268,11 @@ pytype_strict_library(
         ":base_dataset",
         ":datasets_data",
         ":file_utils",
-        "//absl/logging",
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
-        "//tensorflow_datasets:public_api",
+        "//third_party/py/absl/logging",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
+        "//third_party/py/tensorflow_datasets:public_api",
     ],
 )
 
@@ -286,11 +286,11 @@ pytest_test(
     tests = ["tests/forestcover_dataset_test.py"],
     deps = [
         ":forestcover_dataset",
-        "//absl/logging",
-        "//importlib_resources",
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
+        "//third_party/py/absl/logging",
+        "//third_party/py/importlib_resources",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -301,9 +301,9 @@ pytype_strict_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
-        "//numpy",
-        "//pandas",
-        "//tensorflow",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
+        "//third_party/py/tensorflow",
     ],
 )
 
@@ -314,8 +314,8 @@ pytest_test(
     tests = ["tests/sample_utils_test.py"],
     deps = [
         ":sample_utils",
-        "//numpy",
-        "//pandas",
+        "//third_party/py/numpy",
+        "//third_party/py/pandas",
     ],
 )
 
@@ -323,7 +323,7 @@ pytype_strict_library(
     name = "evaluation_utils",
     srcs = ["utils/evaluation_utils.py"],
     srcs_version = "PY3",
-    deps = ["//sklearn"],
+    deps = ["//third_party/py/sklearn"],
 )
 
 pytest_test(
@@ -333,7 +333,7 @@ pytest_test(
     tests = ["tests/evaluation_utils_test.py"],
     deps = [
         ":evaluation_utils",
-        "//numpy",
+        "//third_party/py/numpy",
     ],
 )
 
@@ -342,10 +342,10 @@ pytype_strict_library(
     srcs = ["utils/file_utils.py"],
     srcs_version = "PY3",
     deps = [
-        "//attr",
-        "//importlib_resources",
-        "//tensorflow",
-        "//typing_extensions",
+        "//third_party/py/attr",
+        "//third_party/py/importlib_resources",
+        "//third_party/py/tensorflow",
+        "//third_party/py/typing_extensions",
     ],
 )
 
