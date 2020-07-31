@@ -52,7 +52,7 @@ _COL_NAMES_ALL = [
 
 _README_FILE = file_utils.PackageResource('madi.datasets.data',
                                           'forestcover_README.md')
-_CHECKSUM_DIR = 'google3/third_party/py/madi/datasets/checksum'
+_CHECKSUM_DIR = 'google3/madi/datasets/checksum'
 
 
 class ForestCoverDataset(BaseDataset):

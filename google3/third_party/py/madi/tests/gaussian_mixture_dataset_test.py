@@ -34,7 +34,7 @@ class TestGaussianMixtureDataset:
         upper_bound=3,
         lower_bound=-3)
 
-    self.assertLen(ds.sample, n_pts_neg + n_pts_pos)
+    assert len(ds.sample) == n_pts_neg + n_pts_pos
 
     pos_sample = ds.sample[ds.sample['class_label'] == 1]
     for col in ['x001', 'x002', 'x003', 'x004']:
