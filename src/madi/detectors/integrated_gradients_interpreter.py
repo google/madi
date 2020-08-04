@@ -80,11 +80,6 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
 
     # Create a gradient tensor, where the loss tensor is the output, and the
     # list of variables (params) are the input.
-    gradients = self._model.optimizer.get_gradients(
-        loss=self._model.output[:, 0], params=self._model.input)
-    # Create an EagerExecutionFunction that can be called later on each step.
-    self._get_gradients = tf.keras.backend.function(
-        inputs=self._model.inputs, outputs=gradients)
     logging.info('Finished setting up IG.')
 
   def explain(self,
@@ -102,11 +97,15 @@ class IntegratedGradientsInterpreter(BaseAnomalyInterpreter):
     """
 
     # Create the intermediate steps between sample and reference.
-    interp_output = np.linspace(reference, sample, num_steps)
+    interp_output = tf.convert_to_tensor(
+        np.linspace(reference, sample, num_steps))
+    with tf.GradientTape() as tape:
+      tape.watch(interp_output)
+      outs = self._model(interp_output)
 
     # Next compute and sum the gradients.
-    gradients = self._get_gradients(interp_output)
-    mat_grad = np.matrix(gradients[0])
+    gradients = tape.gradient(outs, interp_output)
+    mat_grad = np.matrix(gradients)
     dif = np.array(reference - sample)
 
     # Integrated Gradients dif * grad_sum for each variable i:
