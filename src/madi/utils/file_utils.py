@@ -16,6 +16,7 @@
 
 import functools
 import os
+import sys
 import typing
 
 import attr
@@ -23,9 +24,9 @@ import tensorflow as tf
 
 # Imports with fallback to backports
 # pylint: disable=g-import-not-at-top
-try:
+if sys.version_info >= (3, 7):
   import importlib.resources as importlib_resources
-except ImportError:
+else:
   import importlib_resources  # Backport for Python <3.7
 
 try:

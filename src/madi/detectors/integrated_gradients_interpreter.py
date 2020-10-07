@@ -194,7 +194,11 @@ def find_nearest_euclidean(df_reference: pd.DataFrame,
   if len(example) != df_reference.shape[1]:
     raise ValueError('Dimensionality is not the same: %d != %d' %
                      (df_reference.shape[1], len(example)))
-  distances = df_reference.agg(distance.euclidean, 1, example)
+
+  # Minor fix required to handle a pandas bug, adding v = example
+  # Pandas issue: https://github.com/pandas-dev/pandas/issues/36948
+  # and PR: https://github.com/pandas-dev/pandas/pull/36950
+  distances = df_reference.agg(distance.euclidean, 1, v=example)
   nearest_ix = distances.idxmin()
   return nearest_ix, distances[nearest_ix]
 
