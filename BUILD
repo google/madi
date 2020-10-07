@@ -109,6 +109,8 @@ pytype_strict_library(
 
 pytest_test(
     name = "neg_sample_random_forest_test",
+    # TODO(b/168828415): Fix flaky issues.
+    flaky = True,
     python_version = "PY3",
     srcs_version = "PY3",
     tests = ["tests/neg_sample_random_forest_test.py"],
@@ -136,6 +138,8 @@ pytype_strict_library(
 
 pytest_test(
     name = "neg_sample_neural_net_detector_test",
+    # TODO(b/168828415): Fix flaky issues.
+    flaky = True,
     python_version = "PY3",
     srcs_version = "PY3",
     tests = ["tests/neg_sample_neural_net_detector_test.py"],
