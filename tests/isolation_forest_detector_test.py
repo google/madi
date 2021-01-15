@@ -37,7 +37,7 @@ class TestIsolationForestDetector:
     training_sample = ds.sample.iloc[:split_ix]
     test_sample = ds.sample.iloc[split_ix:]
 
-    ad = IsolationForestAd(behaviour='new', contamination=sample_ratio)
+    ad = IsolationForestAd(contamination=sample_ratio)
     ad.train_model(x_train=training_sample.drop(columns=['class_label']))
 
     y_actual = test_sample['class_label']
