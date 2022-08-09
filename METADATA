@@ -59,3 +59,13 @@ presubmit: {
   }
 }
 
+exported {
+  copybara {
+    config_path: "//depot/google3/third_party/py/madi/copy.bara.sky"
+  }
+  owning_team_email: "ce-ml-team@google.com"
+  path_expression: "//depot/google3/third_party/py/madi/..."
+  request_url: "https://ariane.googleplex.com/launch/4023533"
+  reason: OPEN_SOURCE
+  description: "Open sourcing for Cloud Customer Application and to accompany publication release go/madi. - Automatically translated from http://depot/google3/devtools/copybara/policy/piper.origin.allowlist.textproto;l=10179;rcl=466385013"
+}
