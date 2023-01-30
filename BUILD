@@ -1,3 +1,5 @@
+load("//tools/build_defs/license:license.bzl", "license")
+
 #     Copyright 2020 Google LLC
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +19,13 @@ load("//research/colab:build_defs.bzl", "colab_binary")
 load("//third_party/py/pytest:pytest_defs.bzl", "pytest_test")
 
 package(
+    default_applicable_licenses = ["//third_party/py/madi:license"],
     default_visibility = ["//visibility:public"],
+)
+
+license(
+    name = "license",
+    package_name = "madi",
 )
 
 licenses(["notice"])
