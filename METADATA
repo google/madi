@@ -59,6 +59,10 @@ presubmit: {
   }
 }
 
+presubmit: {
+  include_presubmit: "//depot/google3/corp/ml/anomaly_detection/METADATA"
+}
+
 exported {
   copybara {
     config_path: "//depot/google3/third_party/py/madi/copy.bara.sky"
