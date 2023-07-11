@@ -5,9 +5,10 @@ language: PYTHON
 description: "Multvariate Anomaly Detection with Interpretability (MADI)"
 
 third_party {
-  url {
-    type: PIPER
+  identifier {
+    type: "Piper"
     value: "http://google3/third_party/py/madi"
+    primary_source: true
   }
 }
 
