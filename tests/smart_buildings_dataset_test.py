@@ -15,7 +15,7 @@
 
 from madi.datasets import smart_buildings_dataset
 import pandas as pd
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 import pytest
 
 
