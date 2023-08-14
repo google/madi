@@ -83,14 +83,20 @@ def normalize(df: pd.DataFrame,
     Pandas M x N DataFrame with normalized features.
   """
 
-  df_norm = pd.DataFrame()
+  normalized_cols = []
   for column in get_column_order(normalization_info):
     if normalization_info[column].std == 0.0:
-      df_norm[column] = 0.0
+      normalized_column_series = pd.Series(0.0, name=column, index=df.index)
     else:
-      df_norm[column] = (df[column] - normalization_info[column].mean
-                        ) / normalization_info[column].std
-  return df_norm
+      normalized_values = (
+          df[column] - normalization_info[column].mean
+      ) / normalization_info[column].std
+      normalized_column_series = pd.Series(
+          normalized_values, name=column, index=df.index
+      )
+
+    normalized_cols.append(normalized_column_series)
+  return pd.concat(normalized_cols, axis=1)
 
 
 def denormalize(df_norm: pd.DataFrame,
@@ -104,15 +110,23 @@ def denormalize(df_norm: pd.DataFrame,
   Returns:
     Pandas M x N DataFrame with denormalized features.
   """
-  df = pd.DataFrame()
-
+  native_cols = []
   for column in get_column_order(normalization_info):
     if normalization_info[column].std == 0.0:
-      df[column] = normalization_info[column].mean
+      native_column_series = pd.Series(
+          normalization_info[column].mean, name=column, index=df_norm.index
+      )
     else:
-      df[column] = df_norm[column] * normalization_info[
-          column].std + normalization_info[column].mean
-  return df
+      native_values = (
+          df_norm[column] * normalization_info[column].std
+          + normalization_info[column].mean
+      )
+      native_column_series = pd.Series(
+          native_values, name=column, index=df_norm.index
+      )
+
+    native_cols.append(native_column_series)
+  return pd.concat(native_cols, axis=1)
 
 
 def write_normalization_info(normalization_info: Dict[str, Variable],
