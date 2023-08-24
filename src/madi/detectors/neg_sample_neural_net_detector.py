@@ -75,6 +75,7 @@ class NegativeSamplingNeuralNetworkAD(
       learning_rate: float,
       layer_width: int,
       n_hidden_layers: int,
+      patience: int,
       log_dir: str,
       tpu_worker: Optional[str] = None,
   ):
@@ -85,13 +86,14 @@ class NegativeSamplingNeuralNetworkAD(
     self._steps_per_epoch = steps_per_epoch
     self._epochs = epochs
     self._dropout = dropout
+    self._learning_rate = learning_rate
     self._layer_width = layer_width
     self._n_hidden_layers = n_hidden_layers
     self._log_dir = log_dir
     self._tpu_worker = tpu_worker
     self._batch_size = batch_size
     self._normalization_info = None
-    self._learning_rate = learning_rate
+    self._patience = patience
     logging.info('TensorFlow version %s', tf.version.VERSION)
 
     # Especially with TPUs, it's useful to destroy the current TF graph and
@@ -159,7 +161,10 @@ class NegativeSamplingNeuralNetworkAD(
           self._n_hidden_layers,
       )
 
-    self._model.fit(
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor='val_binary_accuracy', patience=self._patience)
+
+    self._history = self._model.fit(
         x=train_dataset,
         steps_per_epoch=self._steps_per_epoch,
         verbose=1,
@@ -171,7 +176,9 @@ class NegativeSamplingNeuralNetworkAD(
                 histogram_freq=1,
                 write_graph=False,
                 write_images=False,
-            )],
+            ),
+            early_stopping,
+        ],
     )
 
   def predict(self, sample_df: pd.DataFrame) -> pd.DataFrame:
@@ -185,13 +192,17 @@ class NegativeSamplingNeuralNetworkAD(
       Normal class.
     """
 
-    sample_df_normalized = sample_utils.normalize(sample_df,
-                                                  self._normalization_info)
+    sample_df_normalized = sample_utils.normalize(
+        sample_df, self._normalization_info
+    )
     column_order = sample_utils.get_column_order(self._normalization_info)
     x = np.float32(np.matrix(sample_df_normalized[column_order]))
     y_hat = self._model.predict(x, verbose=1, steps=1)
     sample_df['class_prob'] = y_hat
     return sample_df
+
+  def get_history(self) -> tf.keras.callbacks.History:
+    return self._history
 
   def _get_model(
       self,
@@ -216,7 +227,9 @@ class NegativeSamplingNeuralNetworkAD(
     model = tf.keras.Sequential()
     model.add(
         tf.keras.layers.Dense(
-            layer_width, input_dim=input_dim, activation='relu'))
+            layer_width, input_dim=input_dim, activation='relu'
+        )
+    )
     model.add(tf.keras.layers.Dropout(dropout))
 
     for _ in range(n_hidden_layers):
