@@ -135,7 +135,6 @@ pytype_strict_library(
     srcs_version = "PY3",
     deps = [
         ":base_detector",
-        ":base_interpreter",
         ":sample_utils",
         "//third_party/py/absl/logging",
         "//third_party/py/numpy",
@@ -155,8 +154,11 @@ pytest_test(
         ":evaluation_utils",
         ":gaussian_mixture_dataset",
         ":neg_sample_neural_net_detector",
+        ":sample_utils",
         "//third_party/py/absl/logging",
         "//third_party/py/numpy",
+        "//third_party/py/tensorflow:tensorflow_no_contrib",
+        "//third_party/py/tensorflow_datasets",
     ],
 )
 
