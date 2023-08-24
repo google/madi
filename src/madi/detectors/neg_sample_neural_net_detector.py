@@ -1,4 +1,4 @@
-#     Copyright 2020 Google LLC
+#     Copyright 2023 Google LLC
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -13,34 +13,71 @@
 #     limitations under the License.
 """Anomaly Detector based on Negative Sampling Neural Network (NS-NN)."""
 
+from collections.abc import Sequence
 import os
 from typing import Optional
 from absl import logging
-from madi.detectors.base_detector import BaseAnomalyDetectionAlgorithm
-import madi.utils.sample_utils as sample_utils
+from madi.detectors import base_detector
+from madi.utils import sample_utils
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-_SHUFFLE_BUFFERSIZE = 500
+_TRAIN_VALIDATION_SPLIT = 0.8
 _MODEL_FILENAME = 'model-multivariate-ad'
 _NORMALIZATION_FILENAME = 'normalization_info'
 
 
-class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
+class NegativeSamplingDataset:
+  """A dataset with positive and negative samples in the given sample ratio."""
+
+  def __init__(
+      self,
+      x_train: pd.DataFrame,
+      sample_ratio: float,
+      sample_delta: float,
+      batch_size: int,
+      column_order: Sequence[str],
+  ):
+    self._x_train = x_train.sample(frac=1)  # shuffles the data
+    self._sample_ratio = sample_ratio
+    self._sample_delta = sample_delta
+    self._batch_size = batch_size
+    self._column_order = column_order
+
+  def __len__(self):
+    return self._batch_size * (1 + self._sample_ratio)
+
+  def __call__(self):
+    mbatch = self._x_train.sample(n=self._batch_size, replace=True)
+    training_sample = sample_utils.apply_negative_sample(
+        positive_sample=mbatch,
+        sample_ratio=self._sample_ratio,
+        sample_delta=self._sample_delta,
+    )
+    x = np.float32(np.matrix(training_sample[self._column_order]))
+    y = np.float32(np.array(training_sample['class_label']))
+    yield x, y
+
+
+class NegativeSamplingNeuralNetworkAD(
+    base_detector.BaseAnomalyDetectionAlgorithm):
   """Anomaly detection using negative sampling and a neural net classifier."""
 
-  def __init__(self,
-               sample_ratio: float,
-               sample_delta: float,
-               batch_size: int,
-               steps_per_epoch: int,
-               epochs: int,
-               dropout: float,
-               layer_width: int,
-               n_hidden_layers: int,
-               log_dir: str,
-               tpu_worker: Optional[str] = None):
+  def __init__(
+      self,
+      sample_ratio: float,
+      sample_delta: float,
+      batch_size: int,
+      steps_per_epoch: int,
+      epochs: int,
+      dropout: float,
+      learning_rate: float,
+      layer_width: int,
+      n_hidden_layers: int,
+      log_dir: str,
+      tpu_worker: Optional[str] = None,
+  ):
     self._sample_ratio = sample_ratio
     self._sample_delta = sample_delta
     self._model = None
@@ -54,6 +91,7 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     self._tpu_worker = tpu_worker
     self._batch_size = batch_size
     self._normalization_info = None
+    self._learning_rate = learning_rate
     logging.info('TensorFlow version %s', tf.version.VERSION)
 
     # Especially with TPUs, it's useful to destroy the current TF graph and
@@ -70,58 +108,81 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     column_order = sample_utils.get_column_order(self._normalization_info)
     normalized_x_train = sample_utils.normalize(x_train,
                                                 self._normalization_info)
+    train_points = int(_TRAIN_VALIDATION_SPLIT * len(normalized_x_train))
 
-    normalized_training_sample = sample_utils.apply_negative_sample(
-        positive_sample=normalized_x_train,
+    train_ngen = NegativeSamplingDataset(
+        x_train=normalized_x_train.iloc[:train_points],
         sample_ratio=self._sample_ratio,
-        sample_delta=self._sample_delta)
+        sample_delta=self._sample_delta,
+        batch_size=self._batch_size,
+        column_order=column_order,
+    )
+    train_dataset = tf.data.Dataset.from_generator(
+        train_ngen,
+        output_signature=(
+            tf.TensorSpec(shape=(None, len(column_order)), dtype=tf.float32),
+            tf.TensorSpec(shape=(None), dtype=tf.float32),
+        ),
+    ).repeat(self._batch_size * self._epochs)
 
-    x = np.float32(np.matrix(normalized_training_sample[column_order]))
-    y = np.float32(np.array(normalized_training_sample['class_label']))
-    # create dataset objects from the arrays
-    dx = tf.data.Dataset.from_tensor_slices(x)
-    dy = tf.data.Dataset.from_tensor_slices(y)
-
-    logging.info('Training ns-nn with:')
-    logging.info(normalized_training_sample['class_label'].value_counts())
-
-    # zip the two datasets together
-    train_dataset = tf.data.Dataset.zip(
-        (dx, dy)).shuffle(_SHUFFLE_BUFFERSIZE).repeat().batch(self._batch_size)
+    val_ngen = NegativeSamplingDataset(
+        x_train=normalized_x_train.iloc[train_points:],
+        sample_ratio=self._sample_ratio,
+        sample_delta=self._sample_delta,
+        batch_size=self._batch_size,
+        column_order=column_order,
+    )
+    val_dataset = tf.data.Dataset.from_generator(
+        val_ngen,
+        output_signature=(
+            tf.TensorSpec(shape=(None, len(column_order)), dtype=tf.float32),
+            tf.TensorSpec(shape=(None), dtype=tf.float32)))
 
     if self._tpu_worker:
       resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
-          self._tpu_worker)
+          self._tpu_worker
+      )
       tf.contrib.distribute.initialize_tpu_system(resolver)
       strategy = tf.contrib.distribute.TPUStrategy(resolver)
       with strategy.scope():
-        self._model = self._get_model(x.shape[1], self._dropout,
-                                      self._layer_width, self._n_hidden_layers)
+        self._model = self._get_model(
+            len(column_order),
+            self._dropout,
+            self._layer_width,
+            self._n_hidden_layers,
+        )
     else:
-      self._model = self._get_model(x.shape[1], self._dropout,
-                                    self._layer_width, self._n_hidden_layers)
+      self._model = self._get_model(
+          len(column_order),
+          self._dropout,
+          self._layer_width,
+          self._n_hidden_layers,
+      )
 
     self._model.fit(
         x=train_dataset,
         steps_per_epoch=self._steps_per_epoch,
-        verbose=0,
+        verbose=1,
         epochs=self._epochs,
+        validation_data=val_dataset,
         callbacks=[
             tf.keras.callbacks.TensorBoard(
                 log_dir=self._log_dir,
                 histogram_freq=1,
                 write_graph=False,
-                write_images=False)
-        ])
+                write_images=False,
+            )],
+    )
 
   def predict(self, sample_df: pd.DataFrame) -> pd.DataFrame:
     """Given new data, predict the probability of being positive class.
 
     Args:
-      sample_df: dataframe with features as columns, same as train().
+      sample_df: DataFrame with features as columns, same as train().
 
     Returns:
-      DataFrame as sample_df, with colum 'class_prob', prob of Normal class.
+      DataFrame with column 'class_prob' representing the probability of the
+      Normal class.
     """
 
     sample_df_normalized = sample_utils.normalize(sample_df,
@@ -132,8 +193,13 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     sample_df['class_prob'] = y_hat
     return sample_df
 
-  def _get_model(self, input_dim: int, dropout: float, layer_width: int,
-                 n_hidden_layers: int) -> tf.keras.Sequential:
+  def _get_model(
+      self,
+      input_dim: int,
+      dropout: float,
+      layer_width: int,
+      n_hidden_layers: int,
+  ) -> tf.keras.Sequential:
     """Creates a Neural Network model for Anomaly Detection.
 
     Creates a simple stack of dense/dropout layers with equal width.
@@ -159,10 +225,27 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
 
     model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
 
+    optimizer = tf.keras.optimizers.RMSprop(
+        learning_rate=self._learning_rate,
+        rho=0.9,
+        momentum=0.0,
+        epsilon=1e-07,
+        centered=False,
+        weight_decay=None,
+        clipnorm=None,
+        clipvalue=None,
+        global_clipnorm=None,
+        use_ema=False,
+        ema_momentum=0.99,
+        ema_overwrite_frequency=100,
+        jit_compile=True,
+        name='RMSprop',
+    )
     model.compile(
         loss='binary_crossentropy',
-        optimizer='rmsprop',
-        metrics=[tf.keras.metrics.binary_accuracy])
+        optimizer=optimizer,
+        metrics=[tf.keras.metrics.binary_accuracy],
+    )
     return model
 
   def save_model(self, model_dir: str) -> None:
@@ -173,7 +256,7 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     normalization_file_path = os.path.join(model_dir, _NORMALIZATION_FILENAME)
     sample_utils.write_normalization_info(self._normalization_info,
                                           normalization_file_path)
-    logging.info('Sucessfully saved normalization info to %s',
+    logging.info('Successfully saved normalization info to %s',
                  normalization_file_path)
 
   def load_model(self, model_dir: str) -> None:
@@ -184,5 +267,5 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
     normalization_file_path = os.path.join(model_dir, _NORMALIZATION_FILENAME)
     self._normalization_info = sample_utils.read_normalization_info(
         normalization_file_path)
-    logging.info('Sucessfully read normalization info from %s',
+    logging.info('Successfully read normalization info from %s',
                  normalization_file_path)
