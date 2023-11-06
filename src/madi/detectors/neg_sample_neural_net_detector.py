@@ -15,6 +15,7 @@
 """Anomaly Detector based on Negative Sampling Neural Network (NS-NN)."""
 
 import os
+from typing import Optional
 from absl import logging
 from madi.detectors.base_detector import BaseAnomalyDetectionAlgorithm
 import madi.utils.sample_utils as sample_utils
@@ -40,7 +41,7 @@ class NegativeSamplingNeuralNetworkAD(BaseAnomalyDetectionAlgorithm):
                layer_width: int,
                n_hidden_layers: int,
                log_dir: str,
-               tpu_worker: str = None):
+               tpu_worker: Optional[str] = None):
     self._sample_ratio = sample_ratio
     self._sample_delta = sample_delta
     self._model = None

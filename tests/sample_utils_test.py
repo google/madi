@@ -70,6 +70,8 @@ class TestSampleUtilsTest:
     n_points = 10000
     df_in = sample_utils.get_pos_sample_synthetic(
         mean=[0, 1, 2], cov=np.eye(3), n_points=n_points)
+    # Add in a constant-value (STD=0.0) dimension.
+    df_in['x004'] = 99.0
     df_in = df_in.drop(columns=['class_label'])
     # Get the normalization info from the data frame.
     normalization_info = sample_utils.get_normalization_info(df_in)

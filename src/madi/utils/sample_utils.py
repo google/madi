@@ -83,10 +83,14 @@ def normalize(df: pd.DataFrame,
   Returns:
     Pandas M x N DataFrame with normalized features.
   """
+
   df_norm = pd.DataFrame()
   for column in get_column_order(normalization_info):
-    df_norm[column] = (df[column] - normalization_info[column].mean
-                      ) / normalization_info[column].std
+    if normalization_info[column].std == 0.0:
+      df_norm[column] = 0.0
+    else:
+      df_norm[column] = (df[column] - normalization_info[column].mean
+                        ) / normalization_info[column].std
   return df_norm
 
 
@@ -102,9 +106,13 @@ def denormalize(df_norm: pd.DataFrame,
     Pandas M x N DataFrame with denormalized features.
   """
   df = pd.DataFrame()
+
   for column in get_column_order(normalization_info):
-    df[column] = df_norm[column] * normalization_info[
-        column].std + normalization_info[column].mean
+    if normalization_info[column].std == 0.0:
+      df[column] = normalization_info[column].mean
+    else:
+      df[column] = df_norm[column] * normalization_info[
+          column].std + normalization_info[column].mean
   return df
 
 
