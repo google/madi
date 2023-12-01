@@ -115,7 +115,8 @@ class TestSampleUtilsTest:
     })
     sample = sample_utils.apply_negative_sample(positive_sample, 10, 0.05)
     assert_series_equal(sample['class_label'].value_counts(),
-                        pd.Series([50, 5], name='class_label', index=[0, 1]))
+                        pd.Series([50, 5], name='class_label', index=[0, 1]),
+                        check_names=False)
     assert min(sample['x001']) >= -1.05
     assert max(sample['x001']) <= 0.05
     assert min(sample['x002']) >= 47.5
