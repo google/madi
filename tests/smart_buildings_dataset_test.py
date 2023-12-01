@@ -66,7 +66,8 @@ class TestSmartBuildingsDataset:
 
     assert_series_equal(
         ds.sample['class_label'].value_counts(),
-        pd.Series([58504, 1921], name='class_label', index=[1, 0]))
+        pd.Series([58504, 1921], name='class_label', index=[1, 0]),
+        check_names=False)
 
   def test_readme(self):
     ds = smart_buildings_dataset.SmartBuildingsDataset()
