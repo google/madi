@@ -10,6 +10,11 @@ third_party {
     value: "http://google3/third_party/py/madi"
     primary_source: true
   }
+
+  identifier {
+    type: "PyPI"
+    omission_reason: "Package doesn't have an upstream repo."
+  }
 }
 
 presubmit: {
