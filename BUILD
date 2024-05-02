@@ -1,4 +1,4 @@
-load("//tools/build_defs/license:license.bzl", "license")
+load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 
 #     Copyright 2020 Google LLC
 #
@@ -14,9 +14,9 @@ load("//tools/build_defs/license:license.bzl", "license")
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 load("//devtools/python/blaze:strict.bzl", "py_strict_test")
-load("//devtools/python/blaze:pytype.bzl", "pytype_strict_library")
 load("//research/colab:build_defs.bzl", "colab_binary")
 load("//third_party/py/pytest:pytest_defs.bzl", "pytest_test")
+load("//tools/build_defs/license:license.bzl", "license")
 
 package(
     default_applicable_licenses = ["//third_party/py/madi:license"],
